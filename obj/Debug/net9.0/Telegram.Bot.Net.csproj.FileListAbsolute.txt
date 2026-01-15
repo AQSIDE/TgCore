@@ -1,0 +1,11 @@
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\bin\Debug\net9.0\Telegram.Bot.Net.deps.json
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\bin\Debug\net9.0\Telegram.Bot.Net.dll
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\bin\Debug\net9.0\Telegram.Bot.Net.pdb
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\Telegram.Bot.Net.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\Telegram.Bot.Net.AssemblyInfoInputs.cache
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\Telegram.Bot.Net.AssemblyInfo.cs
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\Telegram.Bot.Net.csproj.CoreCompileInputs.cache
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\Telegram.Bot.Net.dll
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\refint\Telegram.Bot.Net.dll
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\Telegram.Bot.Net.pdb
+C:\Users\PC\Desktop\Projects\StarlyMarket\Telegram.Bot.Net\obj\Debug\net9.0\ref\Telegram.Bot.Net.dll

@@ -1,0 +1,181 @@
+using TgCore.Api.Clients;
+using TgCore.Api.Interfaces;
+using TgCore.Sdk.Looping.Types;
+
+namespace TgCore.Sdk.Services;
+
+public class BotTemporaryMessageService
+{
+    private readonly Dictionary<long, List<(long, DateTime)>> _messages = new();
+    private readonly Lock _lock = new();
+
+    private readonly TelegramBot _bot;
+
+    private Func<long, long, Task>? _onDelete;
+    private Func<Exception, Task>? _onError;
+    private Func<int, int, Task>? _onDebug;
+
+    public BotTemporaryMessageService(
+        TelegramBot bot,
+        BotTaskLoop loop,
+        Func<long, long, Task>? onDelete = null,
+        Func<Exception, Task>? onError = null,
+        Func<int, int, Task>? onDebug = null)
+    {
+        _bot = bot;
+
+        _onDelete = onDelete;
+        _onError = onError;
+        _onDebug = onDebug;
+
+        loop.AddRepeatingTask(TimeSpan.FromSeconds(1), SafeCheckForDelete, DateTime.Now.AddSeconds(5));
+    }
+
+    public void SetTemporary(long fromId, long messageId, TimeSpan? lifetime = null)
+    {
+        lock (_lock)
+        {
+            lifetime ??= TimeSpan.FromSeconds(5);
+
+            var expiresAt = DateTime.UtcNow.Add(lifetime.Value);
+
+            if (!_messages.ContainsKey(fromId))
+                _messages[fromId] = new List<(long, DateTime)>();
+
+            _messages[fromId].Add((messageId, expiresAt));
+        }
+    }
+
+    public async Task<bool> SendTemporaryText(long fromId, string text, IKeyboardMarkup? keyboard = null,
+        long? replyId = null, TimeSpan? lifetime = null)
+    {
+        var message = await _bot.SendText(fromId, text, keyboard: keyboard, replyId: replyId);
+        if (message == null) return false;
+
+        SetTemporary(fromId, message.Id, lifetime);
+        return true;
+    }
+
+    public bool RemoveMessage(long userId, long messageId)
+    {
+        lock (_lock)
+        {
+            if (!_messages.TryGetValue(userId, out var userMessages))
+                return false;
+
+            var removedCount = userMessages.RemoveAll(x => x.Item1 == messageId);
+            if (removedCount == 0) return false;
+
+            if (userMessages.Count == 0)
+                _messages.Remove(userId);
+
+            return true;
+        }
+    }
+
+    protected void AddOnDelete(Func<long, long, Task> onDelete) => _onDelete = onDelete;
+    protected void AddOnError(Func<Exception, Task> onError) => _onError = onError;
+    protected void AddOnDebug(Func<int, int, Task> onDebug) => _onDebug = onDebug;
+
+    public void ClearUserMessages(long userId)
+    {
+        lock (_lock)
+        {
+            _messages.Remove(userId);
+        }
+    }
+
+    public int GetMessageCount(long userId)
+    {
+        lock (_lock)
+        {
+            return _messages.TryGetValue(userId, out var messages) ? messages.Count : 0;
+        }
+    }
+
+    public int GetTotalMessageCount()
+    {
+        lock (_lock)
+        {
+            return _messages.Values.Sum(list => list?.Count ?? 0);
+        }
+    }
+
+    private async Task CheckForDelete()
+    {
+        var messagesToDelete = new List<(long, long)>();
+
+        lock (_lock)
+        {
+            if (_messages.Count == 0) return;
+
+            var now = DateTime.UtcNow;
+
+            foreach (var kvp in _messages)
+            {
+                var userId = kvp.Key;
+                var messages = kvp.Value;
+
+                foreach (var message in messages)
+                {
+                    var messageId = message.Item1;
+                    var expiresAt = message.Item2;
+
+                    if (expiresAt < now)
+                        messagesToDelete.Add((userId, messageId));
+                }
+            }
+        }
+
+        if (messagesToDelete.Count > 0)
+            await DeleteMessages(messagesToDelete);
+    }
+
+    private async Task DeleteMessages(List<(long, long)> toDelete)
+    {
+        var actuallyDeleted = new List<(long userId, long messageId)>();
+        int totalDeleted = 0;
+        int remainingCount = 0;
+
+        lock (_lock)
+        {
+            foreach (var message in toDelete)
+            {
+                if (RemoveMessage(message.Item1, message.Item2))
+                {
+                    totalDeleted++;
+                    actuallyDeleted.Add(message);
+                }
+            }
+
+            remainingCount = _messages.Values.Sum(list => list.Count);
+        }
+
+        foreach (var message in actuallyDeleted)
+        {
+            await _bot.DeleteMessage(message.Item1, message.Item2);
+
+            if (_onDelete != null)
+                await _onDelete.Invoke(message.Item1, message.Item2);
+        }
+
+        if (totalDeleted > 0)
+        {
+            if (_onDebug != null)
+                await _onDebug.Invoke(totalDeleted, remainingCount);
+        }
+    }
+
+    private async Task SafeCheckForDelete()
+    {
+        try
+        {
+            await CheckForDelete();
+        }
+        catch (Exception ex)
+        {
+            if (_onError != null)
+                await _onError.Invoke(ex);
+        }
+    }
+}
