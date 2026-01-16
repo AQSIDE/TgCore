@@ -1,6 +1,8 @@
+using TgCore.Api.Interfaces;
+
 namespace TgCore.Sdk.Looping;
 
-public abstract class BotLoop
+public abstract class BotLoop : IBotLoop
 {
     public int IntervalMs { get; set; }
 
@@ -8,11 +10,6 @@ public abstract class BotLoop
     {
         IntervalMs = intervalMs;
     }
-
-    internal async Task CallLoop()
-    {
-        await OnTick();
-    }
     
-    protected abstract Task OnTick();
+    public abstract Task OnTick();
 }

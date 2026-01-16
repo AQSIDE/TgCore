@@ -22,7 +22,7 @@ public class BotTaskLoop : BotLoop
         _tasks.Add(new ScheduledTask(action, executeAt, interval));
     }
 
-    protected override async Task OnTick()
+    public override async Task OnTick()
     {
         if (_tasks.Count == 0) return;
         

@@ -3,9 +3,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using TgCore.Api.Data;
 using TgCore.Api.Helpers;
+using TgCore.Api.Interfaces;
 using TgCore.Api.Methods;
 using TgCore.Api.Types;
-using TgCore.Sdk.Looping;
 
 namespace TgCore.Api.Clients;
 
@@ -33,7 +33,7 @@ internal sealed class TelegramClient
     public async Task StartReceiving(
         List<Func<Update, Task>> updateHandlers, 
         List<Func<Exception, Update?, Task>> errorHandlers, 
-        List<BotLoop> loops,
+        List<IBotLoop> loops,
         CancellationToken ct)
     {
         var updateTask = Task.Run(async () =>
@@ -81,7 +81,7 @@ internal sealed class TelegramClient
                 {
                     try
                     {
-                        await loop.CallLoop();
+                        await loop.OnTick();
                     }
                     catch (Exception ex)
                     {

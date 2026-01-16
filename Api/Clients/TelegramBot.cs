@@ -5,7 +5,6 @@ using TgCore.Api.Helpers;
 using TgCore.Api.Interfaces;
 using TgCore.Api.Methods;
 using TgCore.Api.Types;
-using TgCore.Sdk.Looping;
 
 namespace TgCore.Api.Clients;
 
@@ -13,7 +12,7 @@ public sealed class TelegramBot
 {
     private readonly List<Func<Update, Task>> _updateHandlers = new();
     private readonly List<Func<Exception, Update?, Task>> _errorHandlers = new();
-    private readonly List<BotLoop> _loops = new();
+    private readonly List<IBotLoop> _loops = new();
 
     private readonly TelegramClient _client;
     private CancellationTokenSource? _cts;
@@ -61,8 +60,8 @@ public sealed class TelegramBot
     public void RemoveUpdateHandler(Func<Update, Task> handler) => _updateHandlers.Remove(handler);
     public void RemoveErrorHandler(Func<Exception, Update?, Task> handler) => _errorHandlers.Remove(handler);
     
-    public void AddLoop(BotLoop loop) => _loops.Add(loop);
-    public void RemoveLoop(BotLoop loop) => _loops.Remove(loop);
+    public void AddLoop(IBotLoop loop) => _loops.Add(loop);
+    public void RemoveLoop(IBotLoop loop) => _loops.Remove(loop);
 
     public async Task<Message?> SendText(long chatId, string text, IKeyboardMarkup? keyboard = null, long? replyId = null, 
         ParseMode? parseMode = null)
