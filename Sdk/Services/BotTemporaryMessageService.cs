@@ -11,19 +11,25 @@ public class BotTemporaryMessageService
 
     private readonly TelegramBot _bot;
 
+    private Func<long, long, Task>? _onAdd;
     private Func<long, long, Task>? _onDelete;
     private Func<Exception, Task>? _onError;
     private Func<int, int, Task>? _onDebug;
+    
+    public int MaxMessagesPerUser { get; set; } = 5;
+    public bool UseMaxMessages { get; set; } = true;
 
     public BotTemporaryMessageService(
         TelegramBot bot,
         BotTaskLoop loop,
+        Func<long, long, Task>? onAdd = null,
         Func<long, long, Task>? onDelete = null,
         Func<Exception, Task>? onError = null,
         Func<int, int, Task>? onDebug = null)
     {
         _bot = bot;
 
+        _onAdd = onAdd;
         _onDelete = onDelete;
         _onError = onError;
         _onDebug = onDebug;
@@ -31,10 +37,12 @@ public class BotTemporaryMessageService
         loop.AddRepeatingTask(TimeSpan.FromSeconds(1), SafeCheckForDelete, DateTime.Now.AddSeconds(5));
     }
 
-    public void SetTemporary(long fromId, long messageId, TimeSpan? lifetime = null)
+    public bool SetTemporary(long fromId, long messageId, TimeSpan? lifetime = null)
     {
         lock (_lock)
         {
+            if (UseMaxMessages && GetMessageCount(fromId) >= MaxMessagesPerUser) return false;
+
             lifetime ??= TimeSpan.FromSeconds(5);
 
             var expiresAt = DateTime.UtcNow.Add(lifetime.Value);
@@ -44,16 +52,29 @@ public class BotTemporaryMessageService
 
             _messages[fromId].Add((messageId, expiresAt));
         }
+
+        if (_onAdd != null)
+            _onAdd.Invoke(fromId, messageId);
+        
+        return true;
     }
 
     public async Task<bool> SendTemporaryText(long fromId, string text, IKeyboardMarkup? keyboard = null,
         long? replyId = null, TimeSpan? lifetime = null)
     {
+        if (UseMaxMessages)
+        {
+            lock (_lock)
+            {
+                if (GetMessageCount(fromId) >= MaxMessagesPerUser)
+                    return false;
+            }
+        }
+        
         var message = await _bot.SendText(fromId, text, keyboard: keyboard, replyId: replyId);
         if (message == null) return false;
 
-        SetTemporary(fromId, message.Id, lifetime);
-        return true;
+        return SetTemporary(fromId, message.Id, lifetime);
     }
 
     public bool RemoveMessage(long userId, long messageId)
@@ -76,6 +97,7 @@ public class BotTemporaryMessageService
     protected void AddOnDelete(Func<long, long, Task> onDelete) => _onDelete = onDelete;
     protected void AddOnError(Func<Exception, Task> onError) => _onError = onError;
     protected void AddOnDebug(Func<int, int, Task> onDebug) => _onDebug = onDebug;
+    protected void AddOnAdd(Func<long, long, Task> onAdd) => _onAdd = onAdd;
 
     public void ClearUserMessages(long userId)
     {

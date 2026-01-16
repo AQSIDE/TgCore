@@ -2,7 +2,7 @@ namespace TgCore.Diagnostics.Debugger;
 
 public static class Debug
 {
-    private static readonly Lock Lock = new();
+    private static readonly object Lock = new();
     
     public static bool UseFullDate { get; set; } = false;
 
