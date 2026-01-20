@@ -1,11 +1,3 @@
-using System.Text.Json;
-using TgCore.Api.Data;
-using TgCore.Api.Enums;
-using TgCore.Api.Helpers;
-using TgCore.Api.Interfaces;
-using TgCore.Api.Methods;
-using TgCore.Api.Types;
-
 namespace TgCore.Api.Clients;
 
 public sealed class TelegramBot
@@ -62,6 +54,12 @@ public sealed class TelegramBot
     
     public void AddLoop(IBotLoop loop) => _loops.Add(loop);
     public void RemoveLoop(IBotLoop loop) => _loops.Remove(loop);
+
+    public async Task AddException(Exception exception, Update? update)
+    {
+        if (_errorHandlers.Count > 0)
+            await Task.WhenAll(_errorHandlers.Select(f => f.Invoke(exception, update)));
+    }
 
     public async Task<Message?> SendText(long chatId, string text, IKeyboardMarkup? keyboard = null, long? replyId = null, 
         ParseMode? parseMode = null)

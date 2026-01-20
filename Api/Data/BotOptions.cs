@@ -1,5 +1,3 @@
-using TgCore.Api.Enums;
-
 namespace TgCore.Api.Data;
 
 public class BotOptions
@@ -10,9 +8,10 @@ public class BotOptions
     public UpdateType[] AllowedUpdates { get; set; }
     public ParseMode DefaultParseMode { get; set; }
 
-    public BotOptions(string token, UpdateType[] allowedUpdates)
+    public BotOptions(string token, UpdateType[]? allowedUpdates = null, ParseMode defaultParseMode = ParseMode.None)
     {
         Token = token;
-        AllowedUpdates = allowedUpdates;
+        AllowedUpdates = allowedUpdates ?? new [] { UpdateType.Message, UpdateType.CallbackQuery };
+        DefaultParseMode = defaultParseMode;
     }
 }

@@ -1,5 +1,3 @@
-using TgCore.Api.Clients;
-using TgCore.Api.Interfaces;
 using TgCore.Sdk.Looping.Types;
 
 namespace TgCore.Sdk.Services;
@@ -7,14 +5,12 @@ namespace TgCore.Sdk.Services;
 public class BotTemporaryMessageService
 {
     private readonly Dictionary<long, List<(long, DateTime)>> _messages = new();
-    private readonly Lock _lock = new();
+    private readonly object _lock = new();
 
     private readonly TelegramBot _bot;
 
     private Func<long, long, Task>? _onAdd;
     private Func<long, long, Task>? _onDelete;
-    private Func<Exception, Task>? _onError;
-    private Func<int, int, Task>? _onDebug;
     
     public int MaxMessagesPerUser { get; set; } = 5;
     public bool UseMaxMessages { get; set; } = true;
@@ -23,16 +19,12 @@ public class BotTemporaryMessageService
         TelegramBot bot,
         BotTaskLoop loop,
         Func<long, long, Task>? onAdd = null,
-        Func<long, long, Task>? onDelete = null,
-        Func<Exception, Task>? onError = null,
-        Func<int, int, Task>? onDebug = null)
+        Func<long, long, Task>? onDelete = null)
     {
         _bot = bot;
 
         _onAdd = onAdd;
         _onDelete = onDelete;
-        _onError = onError;
-        _onDebug = onDebug;
 
         loop.AddRepeatingTask(TimeSpan.FromSeconds(1), SafeCheckForDelete, DateTime.Now.AddSeconds(5));
     }
@@ -95,8 +87,6 @@ public class BotTemporaryMessageService
     }
 
     protected void AddOnDelete(Func<long, long, Task> onDelete) => _onDelete = onDelete;
-    protected void AddOnError(Func<Exception, Task> onError) => _onError = onError;
-    protected void AddOnDebug(Func<int, int, Task> onDebug) => _onDebug = onDebug;
     protected void AddOnAdd(Func<long, long, Task> onAdd) => _onAdd = onAdd;
 
     public void ClearUserMessages(long userId)
@@ -156,8 +146,6 @@ public class BotTemporaryMessageService
     private async Task DeleteMessages(List<(long, long)> toDelete)
     {
         var actuallyDeleted = new List<(long userId, long messageId)>();
-        int totalDeleted = 0;
-        int remainingCount = 0;
 
         lock (_lock)
         {
@@ -165,12 +153,9 @@ public class BotTemporaryMessageService
             {
                 if (RemoveMessage(message.Item1, message.Item2))
                 {
-                    totalDeleted++;
                     actuallyDeleted.Add(message);
                 }
             }
-
-            remainingCount = _messages.Values.Sum(list => list.Count);
         }
 
         foreach (var message in actuallyDeleted)
@@ -179,12 +164,6 @@ public class BotTemporaryMessageService
 
             if (_onDelete != null)
                 await _onDelete.Invoke(message.Item1, message.Item2);
-        }
-
-        if (totalDeleted > 0)
-        {
-            if (_onDebug != null)
-                await _onDebug.Invoke(totalDeleted, remainingCount);
         }
     }
 
@@ -196,8 +175,7 @@ public class BotTemporaryMessageService
         }
         catch (Exception ex)
         {
-            if (_onError != null)
-                await _onError.Invoke(ex);
+            await _bot.AddException(ex, null);
         }
     }
 }

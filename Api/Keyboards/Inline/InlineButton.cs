@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace TgCore.Api.Keyboards.Inline;
 
 public sealed class InlineButton

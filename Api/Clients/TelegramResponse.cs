@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace TgCore.Api.Clients;
 
 internal sealed class TelegramResponse<T>

@@ -1,7 +1,3 @@
-using TgCore.Api.Clients;
-using TgCore.Api.Enums;
-using TgCore.Api.Types;
-
 namespace TgCore.Sdk.Data.Context;
 
 public abstract class BotContext

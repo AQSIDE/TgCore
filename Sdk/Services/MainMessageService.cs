@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using TgCore.Api.Clients;
 using TgCore.Api.Interfaces;
 using TgCore.Api.Types;
+using TgCore.Sdk.Data.Context;
 
 namespace TgCore.Sdk.Services;
 
@@ -18,49 +19,78 @@ public class BotMainMessageService
     public async Task SendMessage(long userId, string text, IKeyboardMarkup? keyboard = null, long? replyId = null,
         long? otherMessageId = null)
     {
-        var message = await _bot.SendText(userId, text, keyboard, replyId);
-        if (message != null)
-            _messages[userId] = new MainMessageContext(message, keyboard);
+        try
+        {
+            var message = await _bot.SendText(userId, text, keyboard, replyId);
+            if (message != null)
+                _messages[userId] = new MainMessageContext(message, keyboard);
 
-        if (otherMessageId != null && message != null)
-            await DeleteOtherMessages(userId, message.Id, otherMessageId.Value);
+            if (otherMessageId != null && message != null)
+                await DeleteOtherMessages(userId, message.Id, otherMessageId.Value);
+        }
+        catch (Exception ex)
+        {
+            await _bot.AddException(ex, null);
+        }
     }
 
     public async Task<bool> DeleteMessage(long userId)
     {
-        if (_messages.TryGetValue(userId, out var context))
+        try
         {
-            await _bot.DeleteMessage(userId, context.Message.Id);
-            _messages.TryRemove(userId, out _);
+            if (_messages.TryGetValue(userId, out var context))
+            {
+                await _bot.DeleteMessage(userId, context.Message.Id);
+                _messages.TryRemove(userId, out _);
 
-            return true;
+                return true;
+            }
+
+            return false;
         }
-
-        return false;
+        catch (Exception ex)
+        {
+            await _bot.AddException(ex, null);
+            return false;
+        }
     }
 
     public async Task SendAndDelete(long userId, string text, IKeyboardMarkup? keyboard = null, long? replyId = null,
         long? otherMessageId = null)
     {
-        await DeleteMessage(userId);
-        await SendMessage(userId, text, keyboard: keyboard, replyId: replyId, otherMessageId: otherMessageId);
+        try
+        {
+            await DeleteMessage(userId);
+            await SendMessage(userId, text, keyboard: keyboard, replyId: replyId, otherMessageId: otherMessageId);
+        }
+        catch (Exception ex)
+        {
+            await _bot.AddException(ex, null);
+        }
     }
 
     public async Task UpdateOrCreate(long userId, string text, IKeyboardMarkup? keyboard = null, long? replyId = null,
         long? otherMessageId = null)
     {
-        if (_messages.TryGetValue(userId, out var context))
+        try
         {
-            if (context.Message.Text != text && context.Keyboard != keyboard)
-                await _bot.EditText(userId, context.Message.Id, text, keyboard, replyId);
-        }
-        else
-        {
-            await SendMessage(userId, text, keyboard: keyboard, replyId: replyId);
-        }
+            if (_messages.TryGetValue(userId, out var context))
+            {
+                if (context.Message.Text != text && context.Keyboard != keyboard)
+                    await _bot.EditText(userId, context.Message.Id, text, keyboard, replyId);
+            }
+            else
+            {
+                await SendMessage(userId, text, keyboard: keyboard, replyId: replyId);
+            }
 
-        if (context?.Message != null && otherMessageId != null)
-            await DeleteOtherMessages(userId, context.Message.Id, otherMessageId.Value);
+            if (context?.Message != null && otherMessageId != null)
+                await DeleteOtherMessages(userId, context.Message.Id, otherMessageId.Value);
+        }
+        catch (Exception ex)
+        {
+            await _bot.AddException(ex, null);
+        }
     }
 
     public MainMessageContext? GetMessage(long userId)
@@ -71,10 +101,17 @@ public class BotMainMessageService
 
     public async Task Remove(long fromId, bool deleteMainMessage = true)
     {
-        if (deleteMainMessage)
-            await DeleteMessage(fromId);
+        try
+        {
+            if (deleteMainMessage)
+                await DeleteMessage(fromId);
 
-        _messages.TryRemove(fromId, out _);
+            _messages.TryRemove(fromId, out _);
+        }
+        catch (Exception ex)
+        {
+            await _bot.AddException(ex, null);
+        }
     }
 
     private async Task DeleteOtherMessages(long userId, long mainMessageId, long otherMessageId)

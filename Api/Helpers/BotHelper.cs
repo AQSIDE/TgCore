@@ -1,6 +1,3 @@
-using TgCore.Api.Enums;
-using TgCore.Api.Types;
-
 namespace TgCore.Api.Helpers;
 
 internal class BotHelper
@@ -29,7 +26,7 @@ internal class BotHelper
             ParseMode.HTML => "HTML",
             ParseMode.Markdown => "Markdown",
             ParseMode.MarkdownV2 => "MarkdownV2",
-            _ => throw new ArgumentOutOfRangeException(nameof(mode), "Unsupported parse mode")
+            _ => "none"
         };
     }
     

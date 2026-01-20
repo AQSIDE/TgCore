@@ -1,12 +1,3 @@
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using TgCore.Api.Data;
-using TgCore.Api.Helpers;
-using TgCore.Api.Interfaces;
-using TgCore.Api.Methods;
-using TgCore.Api.Types;
-
 namespace TgCore.Api.Clients;
 
 internal sealed class TelegramClient

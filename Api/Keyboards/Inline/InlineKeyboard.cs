@@ -1,6 +1,3 @@
-using System.Text.Json.Serialization;
-using TgCore.Api.Interfaces;
-
 namespace TgCore.Api.Keyboards.Inline;
 
 public sealed class InlineKeyboard : IKeyboardMarkup

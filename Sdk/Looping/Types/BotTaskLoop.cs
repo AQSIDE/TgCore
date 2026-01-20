@@ -3,12 +3,12 @@ namespace TgCore.Sdk.Looping.Types;
 public class BotTaskLoop : BotLoop
 {
     private readonly List<ScheduledTask> _tasks = new();
-    private readonly Func<Exception, Task>? _onError;
+    private readonly TelegramBot? _bot;
 
-    public BotTaskLoop(int intervalMs = 100, Func<Exception, Task>? onError = null)
+    public BotTaskLoop(int intervalMs = 100, TelegramBot? bot = null)
     {
         IntervalMs = intervalMs;
-        _onError = onError;
+        _bot = bot;
     }
     
     public void AddTask(DateTime executeAt, Func<Task> action)
@@ -37,8 +37,8 @@ public class BotTaskLoop : BotLoop
             }
             catch (Exception ex)
             {
-                if (_onError != null)
-                    await _onError.Invoke(ex);
+                if (_bot != null)
+                    await _bot.AddException(ex, null);
             }
             finally
             {

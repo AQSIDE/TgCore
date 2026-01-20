@@ -5,7 +5,7 @@ namespace TgCore.Sdk.Resources;
 public class BotResources
 {
     private readonly Dictionary<Type, object> _modules = new();
-    private readonly Lock _lock = new();
+    private readonly object _lock = new();
     
     public int Count 
     {

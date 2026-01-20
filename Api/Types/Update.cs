@@ -1,26 +1,29 @@
-using System.Text.Json.Serialization;
-using TgCore.Api.Enums;
-
 namespace TgCore.Api.Types;
 
 public sealed class Update
 {
-    [JsonPropertyName("update_id")] public long Id { get; set; }
+    [JsonPropertyName("update_id")] 
+    public long Id { get; set; }
 
     // -- Messages --
-    [JsonPropertyName("message")] public Message? Message { get; set; }
+    [JsonPropertyName("message")] 
+    public Message? Message { get; set; }
 
-    [JsonPropertyName("edited_message")] public Message? EditedMessage { get; set; }
+    [JsonPropertyName("edited_message")] 
+    public Message? EditedMessage { get; set; }
 
-    [JsonPropertyName("channel_post")] public Message? ChannelPost { get; set; }
+    [JsonPropertyName("channel_post")] 
+    public Message? ChannelPost { get; set; }
 
     [JsonPropertyName("edited_channel_post")]
     public Message? EditedChannelPost { get; set; }
 
     // -- Inline & Callbacks --
-    [JsonPropertyName("callback_query")] public CallbackQuery? CallbackQuery { get; set; }
+    [JsonPropertyName("callback_query")] 
+    public CallbackQuery? CallbackQuery { get; set; }
 
-    [JsonPropertyName("inline_query")] public InlineQuery? InlineQuery { get; set; }
+    [JsonPropertyName("inline_query")] 
+    public InlineQuery? InlineQuery { get; set; }
 
     [JsonPropertyName("chosen_inline_result")]
     public ChosenInlineResult? ChosenInlineResult { get; set; }

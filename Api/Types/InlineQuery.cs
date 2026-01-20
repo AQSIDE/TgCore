@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace TgCore.Api.Types;
 
 public sealed class InlineQuery

@@ -1,5 +1,3 @@
-using TgCore.Api.Interfaces;
-
 namespace TgCore.Sdk.Looping;
 
 public abstract class BotLoop : IBotLoop

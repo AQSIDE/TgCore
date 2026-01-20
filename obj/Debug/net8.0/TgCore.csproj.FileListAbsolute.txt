@@ -1,0 +1,11 @@
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\bin\Debug\net8.0\TgCore.deps.json
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\bin\Debug\net8.0\TgCore.dll
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\bin\Debug\net8.0\TgCore.pdb
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\TgCore.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\TgCore.AssemblyInfoInputs.cache
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\TgCore.AssemblyInfo.cs
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\TgCore.csproj.CoreCompileInputs.cache
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\TgCore.dll
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\refint\TgCore.dll
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\TgCore.pdb
+C:\Users\PC\Desktop\Projects\IncognitalkBot\TgCore\obj\Debug\net8.0\ref\TgCore.dll
