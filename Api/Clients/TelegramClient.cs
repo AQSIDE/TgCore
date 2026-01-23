@@ -33,7 +33,7 @@ internal sealed class TelegramClient
             {
                 try
                 {
-                    var updates = await CallAsync<Update[]>(TelegramMethods.GetUpdates, new
+                    var updates = await CallAsync<Update[]>(TelegramMethods.GET_UPDATES, new
                     {
                         offset = _offset,
                         timeout = _options.Timeout,

@@ -2,7 +2,9 @@ using System.Collections.Concurrent;
 using TgCore.Api.Clients;
 using TgCore.Api.Interfaces;
 using TgCore.Api.Types;
+using TgCore.Sdk.Data;
 using TgCore.Sdk.Data.Context;
+using TgCore.Sdk.Interfaces;
 
 namespace TgCore.Sdk.Services;
 
@@ -21,7 +23,8 @@ public class BotMainMessageService
     {
         try
         {
-            var message = await _bot.SendText(userId, text, keyboard, replyId);
+            var message = await _bot.Message.SendText(userId, text, keyboard, replyId);
+            
             if (message != null)
                 _messages[userId] = new MainMessageContext(message, keyboard);
 
@@ -40,7 +43,7 @@ public class BotMainMessageService
         {
             if (_messages.TryGetValue(userId, out var context))
             {
-                await _bot.DeleteMessage(userId, context.Message.Id);
+                await _bot.Message.DeleteMessage(userId, context.Message.Id);
                 _messages.TryRemove(userId, out _);
 
                 return true;
@@ -77,7 +80,7 @@ public class BotMainMessageService
             if (_messages.TryGetValue(userId, out var context))
             {
                 if (context.Message.Text != text && context.Keyboard != keyboard)
-                    await _bot.EditText(userId, context.Message.Id, text, keyboard, replyId);
+                    await _bot.Message.EditText(userId, context.Message.Id, text, keyboard, replyId);
             }
             else
             {
@@ -117,6 +120,6 @@ public class BotMainMessageService
     private async Task DeleteOtherMessages(long userId, long mainMessageId, long otherMessageId)
     {
         if (otherMessageId != mainMessageId)
-            await _bot.DeleteMessage(userId, otherMessageId);
+            await _bot.Message.DeleteMessage(userId, otherMessageId);
     }
 }

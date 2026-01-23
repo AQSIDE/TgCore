@@ -19,5 +19,10 @@ public class BotTextFormatter
         
         return text.Substring(0, actualMaxLength) + suffix;
     }
+
+    public static string Join(IEnumerable<string> values, string separator)
+    {
+        return string.Join(separator, values);
+    }
 }
 

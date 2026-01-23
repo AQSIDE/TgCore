@@ -1,4 +1,4 @@
-namespace TgCore.Sdk.Looping.Types;
+namespace TgCore.Api.Looping;
 
 internal class ScheduledTask
 {

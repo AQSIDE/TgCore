@@ -23,6 +23,35 @@ public sealed class Message
     [JsonPropertyName("edit_date")]
     public long? EditDate { get; set; }
     
-    public bool IsEmpty => string.IsNullOrEmpty(Text);
+    [JsonPropertyName("photo")]
+    public PhotoSize[]? Photo { get; set; }
+    
+    [JsonPropertyName("video")]
+    public Video? Video { get; set; }
+    
+    [JsonPropertyName("audio")]
+    public Audio? Audio { get; set; }
+    
+    [JsonPropertyName("document")]
+    public Document? Document { get; set; }
+    
+    [JsonPropertyName("animation")]
+    public Animation? Animation { get; set; }
+    
+    [JsonPropertyName("voice")]
+    public Voice? Voice { get; set; }
+    
+    [JsonPropertyName("sticker")]
+    public Sticker? Sticker { get; set; }
+    
+    [JsonPropertyName("caption")]
+    public string? Caption { get; set; }
+    
+    public bool IsEmpty => string.IsNullOrEmpty(Text) && 
+                           Photo == null && 
+                           Video == null && 
+                           Audio == null && 
+                           Document == null && 
+                           Animation == null;
     public bool IsReply => ReplyToMessage != null;
 }

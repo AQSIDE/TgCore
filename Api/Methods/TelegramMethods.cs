@@ -3,38 +3,39 @@ namespace TgCore.Api.Methods;
 public class TelegramMethods
 {
     // Отправка сообщений
-    public const string SendMessage = "sendMessage";
-    public const string SendPhoto = "sendPhoto";
-    public const string SendAudio = "sendAudio";
-    public const string SendDocument = "sendDocument";
-    public const string SendVideo = "sendVideo";
-    public const string SendPoll = "sendPoll";
-    public const string SendInvoice = "sendInvoice";
+    public const string SEND_MESSAGE = "sendMessage";
+    public const string SEND_PHOTO = "sendPhoto";
+    public const string SEND_AUDIO = "sendAudio";
+    public const string SEND_DOCUMENT = "sendDocument";
+    public const string SEND_VIDEO = "sendVideo";
+    public const string SEND_ANIMATION = "sendAnimation";
+    public const string SEND_POLL = "sendPoll";
+    public const string SEND_INVOICE = "sendInvoice";
     
     // Управление сообщениями
-    public const string EditMessageText = "editMessageText";
-    public const string DeleteMessage = "deleteMessage";
-    public const string ForwardMessage = "forwardMessage";
-    public const string CopyMessage = "copyMessage";
-    public const string AnswerCallbackQuery = "answerCallbackQuery";
+    public const string EDIT_MESSAGE_TEXT = "editMessageText";
+    public const string DELETE_MESSAGE = "deleteMessage";
+    public const string FORWARD_MESSAGE = "forwardMessage";
+    public const string COPY_MESSAGE = "copyMessage";
+    public const string ANSWER_CALLBACK_QUERY = "answerCallbackQuery";
     
     // Управление чатами
-    public const string GetChat = "getChat";
-    public const string SetChatTitle = "setChatTitle";
-    public const string SetChatPhoto = "setChatPhoto";
-    public const string BanChatMember = "banChatMember";
-    public const string CreateChatInviteLink = "createChatInviteLink";
+    public const string GET_CHAT = "getChat";
+    public const string SET_CHAT_TITLE = "setChatTitle";
+    public const string SET_CHAT_PHOTO = "setChatPhoto";
+    public const string BAN_CHAT_MEMBER = "banChatMember";
+    public const string CREATE_CHAT_INVITE_LINK = "createChatInviteLink";
     
     // Работа с пользователями/группами
-    public const string GetChatAdministrators = "getChatAdministrators";
-    public const string GetUserProfilePhotos = "getUserProfilePhotos";
-    public const string GetChatMembersCount = "getChatMembersCount";
+    public const string GET_CHAT_ADMINISTRATORS = "getChatAdministrators";
+    public const string GET_USER_PROFILE_PHOTOS = "getUserProfilePhotos";
+    public const string GET_CHAT_MEMBERS_COUNT = "getChatMembersCount";
     
     // Управление ботом
-    public const string GetMe = "getMe";
-    public const string SetMe = "setMyCommands";
-    public const string SetMyName = "setMyName";
+    public const string GET_ME = "getMe";
+    public const string SET_MY_COMMANDS = "setMyCommands";
+    public const string SET_MY_NAME = "setMyName";
     
     // Прочее
-    public const string GetUpdates = "getUpdates";
+    public const string GET_UPDATES = "getUpdates";
 }

@@ -1,4 +1,4 @@
-using TgCore.Sdk.Looping.Types;
+using TgCore.Api.Looping;
 
 namespace TgCore.Sdk.Services;
 
@@ -17,7 +17,7 @@ public class BotTemporaryMessageService
 
     public BotTemporaryMessageService(
         TelegramBot bot,
-        BotTaskLoop loop,
+        TaskLoop loop,
         Func<long, long, Task>? onAdd = null,
         Func<long, long, Task>? onDelete = null)
     {
@@ -63,7 +63,7 @@ public class BotTemporaryMessageService
             }
         }
         
-        var message = await _bot.SendText(fromId, text, keyboard: keyboard, replyId: replyId);
+        var message = await _bot.Message.SendText(fromId, text, keyboard: keyboard, replyId: replyId);
         if (message == null) return false;
 
         return SetTemporary(fromId, message.Id, lifetime);
@@ -160,7 +160,7 @@ public class BotTemporaryMessageService
 
         foreach (var message in actuallyDeleted)
         {
-            await _bot.DeleteMessage(message.Item1, message.Item2);
+            await _bot.Message.DeleteMessage(message.Item1, message.Item2);
 
             if (_onDelete != null)
                 await _onDelete.Invoke(message.Item1, message.Item2);

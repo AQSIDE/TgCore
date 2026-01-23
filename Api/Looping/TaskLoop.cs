@@ -1,11 +1,13 @@
-namespace TgCore.Sdk.Looping.Types;
+namespace TgCore.Api.Looping;
 
-public class BotTaskLoop : BotLoop
+public class TaskLoop : IBotLoop
 {
     private readonly List<ScheduledTask> _tasks = new();
     private readonly TelegramBot? _bot;
+    
+    public int IntervalMs { get; }
 
-    public BotTaskLoop(int intervalMs = 100, TelegramBot? bot = null)
+    public TaskLoop(int intervalMs = 100, TelegramBot? bot = null)
     {
         IntervalMs = intervalMs;
         _bot = bot;
@@ -22,7 +24,7 @@ public class BotTaskLoop : BotLoop
         _tasks.Add(new ScheduledTask(action, executeAt, interval));
     }
 
-    public override async Task OnTick()
+    public async Task OnTick()
     {
         if (_tasks.Count == 0) return;
         
