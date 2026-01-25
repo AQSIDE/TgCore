@@ -40,7 +40,7 @@ public class BotTaskLoop : IBotLoop
             catch (Exception ex)
             {
                 if (_bot != null)
-                    await _bot.AddException(ex, null);
+                    await _bot.AddException(ex);
             }
             finally
             {

@@ -1,3 +1,4 @@
+using TgCore.Api.Bot;
 using TgCore.Api.Looping;
 
 namespace TgCore.Sdk.Services;
@@ -175,7 +176,7 @@ public class BotTemporaryMessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
         }
     }
 }

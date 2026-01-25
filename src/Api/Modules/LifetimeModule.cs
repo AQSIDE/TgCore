@@ -1,4 +1,3 @@
-using TgCore.Api.Looping;
 using TgCore.Diagnostics.Debugger;
 
 namespace TgCore.Api.Modules;
@@ -153,7 +152,7 @@ public class LifetimeModule : ILifetimeModule
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
         }
     }
 }

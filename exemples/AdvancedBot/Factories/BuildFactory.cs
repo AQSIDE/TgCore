@@ -2,7 +2,7 @@ using AdvancedBot.Data.Context;
 using AdvancedBot.Handlers;
 using AdvancedBot.Managers;
 using AdvancedBot.Routers;
-using TgCore.Api.Clients;
+using TgCore.Api.Bot;
 using TgCore.Sdk.Execution;
 using TgCore.Sdk.Interfaces;
 

@@ -1,5 +1,6 @@
 ﻿using AdvancedBot.Factories;
 using AdvancedBot.Managers;
+using TgCore.Api.Bot;
 using TgCore.Api.Clients;
 using TgCore.Api.Data;
 using TgCore.Api.Modules;
@@ -43,7 +44,7 @@ public class Program
         await _routerManager.Route(ctx);
     }
 
-    private static async Task ErrorHandler(Exception ex, Update? update)
+    private static async Task ErrorHandler(Exception ex)
     {
         Debug.LogError(ex.ToString());
     }

@@ -1,3 +1,4 @@
+using TgCore.Api.Bot;
 using TgCore.Sdk.Data.Context;
 using TgCore.Sdk.Interfaces;
 
@@ -38,6 +39,6 @@ public class BotRouterManager<TContext> where TContext : BotContext
     protected virtual async Task OnError(TContext ctx, Exception ex)
     {
         if (_bot != null)
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
     }
 }

@@ -1,3 +1,5 @@
+using TgCore.Api.Bot;
+
 namespace TgCore.Sdk.Data.Context;
 
 public abstract class BotContext

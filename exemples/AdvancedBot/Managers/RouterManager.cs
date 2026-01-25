@@ -1,4 +1,5 @@
 using AdvancedBot.Data.Context;
+using TgCore.Api.Bot;
 using TgCore.Api.Clients;
 using TgCore.Sdk.Interfaces;
 using TgCore.Sdk.Managers;

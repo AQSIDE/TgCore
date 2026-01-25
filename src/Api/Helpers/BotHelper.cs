@@ -1,6 +1,6 @@
 namespace TgCore.Api.Helpers;
 
-internal class BotHelper
+public static class BotHelper
 {
     public static string[] GetAllowedUpdatesNames(UpdateType[] allowedUpdates)
     {

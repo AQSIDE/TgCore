@@ -36,7 +36,7 @@ async Task UpdateHandler(Update update)
     }
 }
 
-async Task ErrorHandler(Exception exception, Update? update)
+async Task ErrorHandler(Exception exception)
 {
     Console.WriteLine($"Error: {exception.Message}");
 }
@@ -83,7 +83,7 @@ async Task UpdateHandler(Update update)
 Handles all API errors:
 
 ```csharp
-async Task ErrorHandler(Exception exception, Update? update)
+async Task ErrorHandler(Exception exception)
 {
     // Log the error
     Console.WriteLine($"Error: {exception}");
@@ -150,11 +150,7 @@ bot = new TelegramBot(new BotOptions(
                 UpdateType.Message,
                 UpdateType.CallbackQuery,
             },
-            defaultParseMode: ParseMode.HTML)
-        {
-            Offset = 0,                    // From which update to start
-            Timeout = 30,                  // Long polling timeout in seconds
-        });
+            defaultParseMode: ParseMode.HTML));
 
         // Message deletion time (Lifetime) configuration
         _bot.Options.Lifetime = new LifetimeModule(bot, bot.MainLoop);
@@ -219,7 +215,7 @@ public class Program
         await _routerManager.Route(ctx);
     }
 
-    private static async Task ErrorHandler(Exception ex, Update? update)
+    private static async Task ErrorHandler(Exception ex)
     {
         Debug.LogError(ex.ToString());
     }

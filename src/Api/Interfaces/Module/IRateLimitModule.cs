@@ -1,4 +1,4 @@
-namespace TgCore.Api.Interfaces;
+namespace TgCore.Api.Interfaces.Module;
 
 public interface IRateLimitModule
 {

@@ -1,4 +1,4 @@
-﻿using TgCore.Api.Clients;
+﻿using TgCore.Api.Bot;
 using TgCore.Api.Data;
 using TgCore.Api.Enums;
 using TgCore.Api.Types;
@@ -28,7 +28,7 @@ class Program
         }
     }
 
-    static async Task ErrorHandler(Exception ex, Update? update)
+    static async Task ErrorHandler(Exception ex)
     {
         Debug.LogError(ex.ToString());
     }

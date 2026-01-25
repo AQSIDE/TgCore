@@ -1,3 +1,4 @@
+using TgCore.Api.Bot;
 using TgCore.Api.Looping;
 using TgCore.Sdk.Data;
 using TgCore.Sdk.Interfaces;
@@ -64,7 +65,7 @@ public class BotRequestDispatcher
         catch (Exception ex)
         {
             if (_bot != null)
-                await _bot.AddException(ex, null);
+                await _bot.AddException(ex);
 
             var failedRequests = 0;
             lock (_lock)
@@ -84,7 +85,7 @@ public class BotRequestDispatcher
             }
 
             if (failedRequests > 0 && _bot != null)
-                await _bot.AddException(new Exception($"{failedRequests} requests failed after retries"), null);
+                await _bot.AddException(new Exception($"{failedRequests} requests failed after retries"));
         }
         finally
         {

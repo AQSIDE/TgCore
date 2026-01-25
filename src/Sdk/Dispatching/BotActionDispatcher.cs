@@ -1,3 +1,4 @@
+using TgCore.Api.Bot;
 using TgCore.Sdk.Data.Context;
 using TgCore.Sdk.Execution;
 
@@ -40,7 +41,7 @@ public class BotActionDispatcher<TContext>  where TContext : BotContext
     protected virtual async Task OnError(Exception ex, TContext ctx)
     {
         if (_bot != null)
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
     }
 }
 

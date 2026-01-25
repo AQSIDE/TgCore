@@ -1,7 +1,7 @@
 using AdvancedBot.Data;
 using AdvancedBot.Data.Context;
 using AdvancedBot.Managers;
-using TgCore.Api.Clients;
+using TgCore.Api.Bot;
 using TgCore.Api.Types;
 using TgCore.Diagnostics.Debugger;
 

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using TgCore.Api.Bot;
 using TgCore.Api.Clients;
 using TgCore.Api.Interfaces;
 using TgCore.Api.Types;
@@ -33,7 +34,7 @@ public class BotMainMessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
         }
     }
 
@@ -53,7 +54,7 @@ public class BotMainMessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
             return false;
         }
     }
@@ -68,7 +69,7 @@ public class BotMainMessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
         }
     }
 
@@ -92,7 +93,7 @@ public class BotMainMessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
         }
     }
 
@@ -113,7 +114,7 @@ public class BotMainMessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
         }
     }
 

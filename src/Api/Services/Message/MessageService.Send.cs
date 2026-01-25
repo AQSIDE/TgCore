@@ -28,7 +28,7 @@ public partial class MessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
             return null;
         }
     }
@@ -75,7 +75,7 @@ public partial class MessageService
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex, null);
+            await _bot.AddException(ex);
             return null;
         }
     }

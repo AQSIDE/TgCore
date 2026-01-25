@@ -1,4 +1,5 @@
 using AdvancedBot.Data.Context;
+using TgCore.Api.Bot;
 using TgCore.Api.Clients;
 using TgCore.Sdk.Execution;
 using TgCore.Sdk.Routing;
@@ -33,6 +34,6 @@ public class CommandRouter : BotHandlerRouter<UserContext>
     {
         if (ctx.Bot == null) return;
 
-        await ctx.Bot.AddException(ex, ctx.Update);
+        await ctx.Bot.AddException(ex);
     }
 }
