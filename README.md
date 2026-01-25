@@ -3,16 +3,21 @@
 **A flexible .NET engine for creating Telegram bots**  
 The library helps quickly and structuredly build bots in C#, abstracting the routine work with the Telegram API and providing basic infrastructure.
 
-Добавление:
+Installation:
 
 ```bash
   dotnet add package TgCore
 ```
 
-Требования к .NET
-- .NET 8.0 или выше.
-- Работает на Windows, Linux и macOS.
-- Рекомендуется использовать последние стабильные версии .NET для лучшей производительности и совместимости.
+**Limitations and development**
+
+The library does not cover the entire Telegram Bot API.
+However, the existing functionality is sufficient for creating high-quality and functional bots.
+
+**.NET Requirements**
+- .NET 8.0 or higher
+- Works on Windows, Linux, and macOS
+- Using the latest stable .NET versions is recommended for better performance and compatibility
 
 Minimum working bot
 
@@ -107,7 +112,7 @@ await bot.Message.SendText(
 await bot.Message.SendMedia(
     chatId: chatId,
     file: InputFile.FromUrl(InputFileType.Photo, "https://example.com/photo.jpg"),
-    text: "My photo 📸",
+    caption: "My photo 📸",
     keyboard: InlineKeyboard.Create()
         .Row(InlineButton.CreateData("👍", "like"), InlineButton.CreateData("👎", "dislike"))
         .Build()
@@ -135,44 +140,6 @@ if (result.Ok)
 bool success = await bot.Message.DeleteMessage(chatId, messageId);
 ```
 
-**Advanced architecture**
-
-```csharp
-async Task UpdateHandler(Update update)
-{
-    // Create context
-    var context = CreateContext(update);
-    if (context == null) return;
-
-    var user = context.User;
-
-    // Update user activity
-    _activityService.UpdateUserActivity(user);
-
-    // Answer callback to remove "loading"
-    if (update.Type == UpdateType.CallbackQuery)
-    {
-        await bot.Message.AnswerCallback(update.CallbackQuery!.Id);
-    }
-
-    // Route the request further
-    await _routerManager.Route(context);
-}
-
-private UserContext? CreateContext(Update update)
-{
-    if (update.GetFrom == null) return null;
-
-    return new UserContext
-    {
-        UserId = update.GetFrom.Id,
-        ChatId = update.GetChat?.Id ?? update.GetFrom.Id,
-        Update = update,
-        UserData = _userRepository.Get(update.GetFrom.Id)
-    };
-}
-```
-
 **Configuration**
 
 ```csharp
@@ -190,79 +157,236 @@ bot = new TelegramBot(new BotOptions(
         });
 
         // Message deletion time (Lifetime) configuration
-        _bot.Options.Lifetime = new LifetimeOptions(new LifetimeModule(bot, bot.MainLoop));
+        _bot.Options.Lifetime = new LifetimeModule(bot, bot.MainLoop);
         
         // Subscribe to Lifetime events
-        bot.Options.Lifetime.Module.OnAdd = OnAdd;
-        bot.Options.Lifetime.Module.OnDelete = OnDelete;
+        bot.Options.Lifetime.OnAdd = OnAdd;
+        bot.Options.Lifetime.OnDelete = OnDelete;
 
         // Request limiting (Rate Limiting) configuration
-        bot.Options.RateLimit = new RateLimitOptions( new RateLimitModule(
+        bot.Options.RateLimit = new RateLimitModule(
             requestsPerSecond: 20,    // 20 requests per second
             maxBurstSize: 25          // Maximum burst
-        )
+            );
+        
+        // Temporary message limiter
+        _bot.Options.TemporaryMessageLimiter = new TemporaryMessageLimiterModule(
+            maxMessageLimit:3,                         // Maximum of 3 temporary messages
+            mode:TemporaryLimiterMode.ReplaceOldest,  // Mode when the limit is exceeded
+            lifetimeModule:_bot.Options.Lifetime)     // Uses ILifetimeModule
+        {
+            // Enable module logging
+            UseLogging = true,
+        };
 );
 ```
 
-## Bot Loop
-Bot Loop — это бесконечный цикл, который срабатывает через заданный интервал в миллисекундах.
-Используется для простоты прототипирования и избегания прямого создания Task.Run.
+**Advanced architecture**
 
-**Интрейфейс IBotLoop**
+```csharp
+public class Program
+{
+    private static ContextFactory _contextFactory = null!;
+    private static BuildFactory _buildFactory = null!;
+    private static RouterManager _routerManager = null!;
+
+    private static TelegramBot _bot = null!;
+
+    private static async Task Main()
+    {
+        _bot = new TelegramBot(new BotOptions("YOUR_BOT_TOKEN"));
+
+        _bot.Options.RateLimit = new RateLimitModule();
+        _bot.Options.Lifetime = new LifetimeModule(_bot, _bot.MainLoop);
+        _bot.Options.TemporaryMessageLimiter = new TemporaryMessageLimiterModule(3);
+        
+        _bot.AddUpdateHandler(UpdateHandler);
+        _bot.AddErrorHandler(ErrorHandler);
+
+        _buildFactory = new BuildFactory(_bot);
+        _contextFactory = new ContextFactory(_bot);
+
+        _routerManager = _buildFactory.BuildRoute();
+
+        await _bot.Run();
+    }
+
+    private static async Task UpdateHandler(Update update)
+    {
+        var ctx = _contextFactory.CreateContext(update);
+        if (ctx == null) return;
+
+        await _routerManager.Route(ctx);
+    }
+
+    private static async Task ErrorHandler(Exception ex, Update? update)
+    {
+        Debug.LogError(ex.ToString());
+    }
+}
+```
+
+## Bot Loop
+Bot Loop is an infinite loop that triggers at a specified interval in milliseconds.
+It is used to simplify prototyping and avoid creating Task.Run manually.
+
+**IBotLoop interface**
 
 ```csharp
 public interface IBotLoop
 {
-    // Интервал между тиками в миллисекундах.
+    // Interval between ticks in milliseconds
     int IntervalMs { get; }
     
-    // Метод, который вызывается на каждом тике.
+    // Method called on each tick
     Task OnTick();
 }
 ```
 
-**Создание реализации**
+**Implementation example**
 
 ```csharp
 public class YourLoop : IBotLoop
 {
-    // Интервал между тиками (поддерживается динамическое изменение значения).
+    // Interval between ticks in milliseconds.
     public int IntervalMs { get; set; }
 
-    // Конструктор с указанием интервала.
+    // Initializes a new instance of YourLoop with the specified interval.
     public YourLoop(int intervalMs)
     {
         IntervalMs = intervalMs;
     }
     
+    // Method called on each tick.
     public async Task OnTick()
     {
-        // Код, который выполняется на каждом тике.
+        // Code executed on each tick
     }
 }
 
-// Пример добавления цикла в бота
+// Adding the loop to the bot
 bot.AddLoop(new YourLoop(100));
 ```
 
-**Базовая реализация**
+**Basic usage**
 
 ```csharp
-// Класс для отложенных и повторяющихся задач
-// Его не нужно создавать вручную, он уже есть в TelegramBot:
+// Class for delayed and recurring tasks.
+// No need to create manually, it is already included in TelegramBot:
 // bot.MainLoop
 public class BotTaskLoop : IBotLoop
+{
+    // Implementation details are handled internally
+}
     
-// Пример добавления отложенной задачи с Func<Task>
+// Example: Adding a delayed task using Func<Task>
 bot.MainLoop.AddTask(
-    DateTime.Now.AddSeconds(5), // Через сколько секунд выполнится функция
-    Execute                     // Функция, которая будет выполнена
+    DateTime.Now.AddSeconds(5), // Executes after 5 seconds
+    Execute                     // The function to execute
 );
 
-// Пример добавления повторяющейся задачи с Func<Task>
+// Example: Adding a repeating task using Func<Task>
 bot.MainLoop.AddRepeatingTask(
-    TimeSpan.FromSeconds(5),    // Интервал между срабатываниями
-    Execute,                    // Функция, которая будет выполнена
-    DateTime.Now.AddSeconds(5)  // Время первого срабатывания
+    TimeSpan.FromSeconds(5),    // Interval between executions
+    Execute,                    // The function to execute
+    DateTime.Now.AddSeconds(5)  // Start time for the first execution
 );
+```
+## Modules
+Modules are built-in features that simplify working with the API.
+
+**ILifetimeModule**
+Manages message lifetime and allows automatic deletion after a set time.
+
+```csharp
+public interface ILifetimeModule
+{
+    // Invoked when a message is added.
+    // Parameters: long chatId/userId, long messageId
+    Func<long, long, Task>? OnAdd { get; set; }
+    
+    // Invoked when a message is deleted.
+    // Parameters: long chatId/userId, long messageId
+    Func<long, long, Task>? OnDelete { get; set; }
+    
+    // Marks a message for automatic deletion after the specified lifetime.
+    public Task Set(long chatId, long messageId, TimeSpan lifetime);
+    
+    // Removes the deletion mark from a message.
+    public Task<bool> Remove(long chatId, long messageId);
+    
+    // Deletes a message immediately.
+    public Task<bool> Delete(long chatId, long messageId);
+    
+    // Clears all deletion marks for a specific chatId/userId.
+    public void ClearMessages(long chatId);
+}
+
+// Activating the module
+bot.Options.Lifetime = new LifetimeModule(_bot, _bot.MainLoop)
+{
+    // Enable module logging
+    UseLogging = true
+};
+
+// Usage example
+await bot.Message.SendText(
+    user.Id,
+    $"⏳ <b>{user.Username}</b>, {TextFormatter.WaitTime(activity.timeLeft.TotalSeconds)}", 
+    replyId:context.MessageId,
+    lifeTime:TimeSpan.FromSeconds(5)); // Message will be deleted after 5 seconds
+```
+
+**IRateLimitModule**
+Manages request rate limits automatically to avoid exceeding Telegram API limits.
+
+```csharp
+public interface IRateLimitModule
+{
+    // Waits until the next request can be sent according to the rate limit.
+    ValueTask WaitAsync(CancellationToken ct = default);
+}
+
+// Activating the module
+bot.Options.RateLimit = new RateLimitModule(
+            requestsPerSecond:20,   // Maximum 20 requests per second
+            maxBurstSize:25);       // Maximum burst size
+```
+
+**ITemporaryMessageLimiterModule**
+Limits temporary messages in chat, used with ILifetimeModule to prevent spam.
+
+```csharp
+public interface ITemporaryMessageLimiterModule
+{
+    // Maximum number of temporary messages allowed per chat
+    int MaxMessageLimit { get; set; }
+
+    // Checks if a new message can be sent in the chat
+    Task<bool> CanSend(long chatId);
+    
+    // Registers a sent temporary message
+    Task RegisterMessage(long chatId, long messageId);
+    
+    // Unregisters a temporary message
+    Task UnregisterMessage(long chatId, long messageId);
+}
+
+// Activating the module
+_bot.Options.TemporaryMessageLimiter = new TemporaryMessageLimiterModule(
+            maxMessageLimit:3,                         // Maximum of 3 temporary messages
+            mode:TemporaryLimiterMode.ReplaceOldest,  // Mode when the limit is exceeded
+            lifetimeModule:_bot.Options.Lifetime)     // Uses ILifetimeModule
+        {
+            // Enable module logging
+            UseLogging = true,
+        };
+       
+// Operation modes
+public enum TemporaryLimiterMode
+{
+    Reject,         // Limit exceeded: the new message will not be sent
+    ReplaceOldest,  // Deletes the oldest message and sends the new one
+    ReplaceNewest   // Deletes the newest message, keeping the old one
+}
 ```
