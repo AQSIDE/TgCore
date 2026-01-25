@@ -3,6 +3,17 @@
 **A flexible .NET engine for creating Telegram bots**  
 The library helps quickly and structuredly build bots in C#, abstracting the routine work with the Telegram API and providing basic infrastructure.
 
+Добавление:
+
+```bash
+  dotnet add package TgCore
+```
+
+Требования к .NET
+- .NET 8.0 или выше.
+- Работает на Windows, Linux и macOS.
+- Рекомендуется использовать последние стабильные версии .NET для лучшей производительности и совместимости.
+
 Minimum working bot
 
 ```csharp
@@ -99,7 +110,8 @@ await bot.Message.SendMedia(
     text: "My photo 📸",
     keyboard: InlineKeyboard.Create()
         .Row(InlineButton.CreateData("👍", "like"), InlineButton.CreateData("👎", "dislike"))
-        .Build(),
+        .Build()
+);        
 
 
 // Direct API requests
@@ -165,7 +177,7 @@ private UserContext? CreateContext(Update update)
 
 ```csharp
 bot = new TelegramBot(new BotOptions(
-            "YOUR_TOKEN",
+            "YOUR_BOT_TOKEN",
             allowedUpdates: new[]
             {
                 UpdateType.Message,
@@ -185,9 +197,72 @@ bot = new TelegramBot(new BotOptions(
         bot.Options.Lifetime.Module.OnDelete = OnDelete;
 
         // Request limiting (Rate Limiting) configuration
-        bot.Options.RateLimit = new RateLimitOptions( new RateLimiter(
+        bot.Options.RateLimit = new RateLimitOptions( new RateLimitModule(
             requestsPerSecond: 20,    // 20 requests per second
             maxBurstSize: 25          // Maximum burst
         )
+);
+```
+
+## Bot Loop
+Bot Loop — это бесконечный цикл, который срабатывает через заданный интервал в миллисекундах.
+Используется для простоты прототипирования и избегания прямого создания Task.Run.
+
+**Интрейфейс IBotLoop**
+
+```csharp
+public interface IBotLoop
+{
+    // Интервал между тиками в миллисекундах.
+    int IntervalMs { get; }
+    
+    // Метод, который вызывается на каждом тике.
+    Task OnTick();
+}
+```
+
+**Создание реализации**
+
+```csharp
+public class YourLoop : IBotLoop
+{
+    // Интервал между тиками (поддерживается динамическое изменение значения).
+    public int IntervalMs { get; set; }
+
+    // Конструктор с указанием интервала.
+    public YourLoop(int intervalMs)
+    {
+        IntervalMs = intervalMs;
+    }
+    
+    public async Task OnTick()
+    {
+        // Код, который выполняется на каждом тике.
+    }
+}
+
+// Пример добавления цикла в бота
+bot.AddLoop(new YourLoop(100));
+```
+
+**Базовая реализация**
+
+```csharp
+// Класс для отложенных и повторяющихся задач
+// Его не нужно создавать вручную, он уже есть в TelegramBot:
+// bot.MainLoop
+public class BotTaskLoop : IBotLoop
+    
+// Пример добавления отложенной задачи с Func<Task>
+bot.MainLoop.AddTask(
+    DateTime.Now.AddSeconds(5), // Через сколько секунд выполнится функция
+    Execute                     // Функция, которая будет выполнена
+);
+
+// Пример добавления повторяющейся задачи с Func<Task>
+bot.MainLoop.AddRepeatingTask(
+    TimeSpan.FromSeconds(5),    // Интервал между срабатываниями
+    Execute,                    // Функция, которая будет выполнена
+    DateTime.Now.AddSeconds(5)  // Время первого срабатывания
 );
 ```

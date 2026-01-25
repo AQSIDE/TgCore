@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+
+        <PackageId>TgCore</PackageId>
+        <PackageTags>telegram;bot;TgCore;telegram-bot;telegram-bot-api</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        
+        <Version>1.1.0</Version>
+        <Authors>AQSIDE</Authors>
+        <Company>AQSIDE</Company>
+        <Description>A flexible .NET engine for creating Telegram bots</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/AQSIDE/TgCore</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/AQSIDE/TgCore</RepositoryUrl>
+        <PackageIcon>icon.png</PackageIcon>
+        <RepositoryType>git</RepositoryType>
+        
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="" />
+        <None Include="icon.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+</Project>
