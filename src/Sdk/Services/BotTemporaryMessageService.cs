@@ -1,6 +1,3 @@
-using TgCore.Api.Bot;
-using TgCore.Api.Looping;
-
 namespace TgCore.Sdk.Services;
 
 public class BotTemporaryMessageService
@@ -64,7 +61,7 @@ public class BotTemporaryMessageService
             }
         }
         
-        var message = await _bot.Message.SendText(fromId, text, keyboard: keyboard, replyId: replyId);
+        var message = await _bot.Requests.SendText(fromId, text, keyboard: keyboard, replyId: replyId);
         if (message == null) return false;
 
         return SetTemporary(fromId, message.Id, lifetime);
@@ -161,7 +158,7 @@ public class BotTemporaryMessageService
 
         foreach (var message in actuallyDeleted)
         {
-            await _bot.Message.DeleteMessage(message.Item1, message.Item2);
+            await _bot.Requests.DeleteMessage(message.Item1, message.Item2);
 
             if (_onDelete != null)
                 await _onDelete.Invoke(message.Item1, message.Item2);

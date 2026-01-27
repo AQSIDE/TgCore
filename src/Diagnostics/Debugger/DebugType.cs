@@ -5,5 +5,6 @@ public enum DebugType
     Debug,
     Info,
     Warning,
-    Error
+    Error,
+    Fatal
 }

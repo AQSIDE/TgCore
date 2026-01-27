@@ -1,10 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TgCore", "src\TgCore.csproj", "{1E9B362E-B49E-4BA8-BB3D-6A836BBEFD45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBot", "exemples\SimpleBot\SimpleBot.csproj", "{52508971-B4F3-4ECD-8747-025265CFEEBB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBot", "examples\SimpleBot\SimpleBot.csproj", "{52508971-B4F3-4ECD-8747-025265CFEEBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvancedBot", "exemples\AdvancedBot\AdvancedBot.csproj", "{4F86712E-04D8-4142-9AE1-AAFE957F9B5E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvancedBot", "examples\AdvancedBot\AdvancedBot.csproj", "{4F86712E-04D8-4142-9AE1-AAFE957F9B5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBot", "examples\TestBot\TestBot.csproj", "{4FF7EC6E-2771-4C23-99B3-9921AC58878B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +29,12 @@ Global
 		{4F86712E-04D8-4142-9AE1-AAFE957F9B5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F86712E-04D8-4142-9AE1-AAFE957F9B5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F86712E-04D8-4142-9AE1-AAFE957F9B5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FF7EC6E-2771-4C23-99B3-9921AC58878B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FF7EC6E-2771-4C23-99B3-9921AC58878B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FF7EC6E-2771-4C23-99B3-9921AC58878B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FF7EC6E-2771-4C23-99B3-9921AC58878B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

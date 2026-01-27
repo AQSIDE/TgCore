@@ -3,10 +3,10 @@ namespace TgCore.Api.Types;
 public class ChosenInlineResult
 {
     [JsonPropertyName("result_id")]
-    public string ResultId { get; set; } 
+    public string ResultId { get; set; } = string.Empty;
 
     [JsonPropertyName("from")]
-    public User From { get; set; }
+    public User From { get; set; } = null!;
     
     [JsonPropertyName("chat")]
     public Chat? Chat { get; set; }
@@ -15,5 +15,5 @@ public class ChosenInlineResult
     public string? InlineMessageId { get; set; } 
 
     [JsonPropertyName("query")]
-    public string Query { get; set; } 
+    public string Query { get; set; }  = string.Empty;
 }

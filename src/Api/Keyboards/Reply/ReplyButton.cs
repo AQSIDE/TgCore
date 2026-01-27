@@ -12,7 +12,8 @@ public sealed class ReplyButton
     public bool? RequestLocation { get; set; }
 
     public ReplyButton(string text) => Text = text;
-    
+
+    public static ReplyButton CreateText(string text) => new(text);
     public static ReplyButton CreateContact(string text) => new(text) { RequestContact = true };
     public static ReplyButton CreateLocation(string text) => new(text) { RequestLocation = true };
 }

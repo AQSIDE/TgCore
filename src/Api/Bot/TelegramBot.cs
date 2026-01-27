@@ -1,3 +1,5 @@
+using TgCore.Api.Modules;
+
 namespace TgCore.Api.Bot;
 
 public sealed class TelegramBot
@@ -5,23 +7,22 @@ public sealed class TelegramBot
     private readonly List<Func<Update, Task>> _updateHandlers = new();
     private readonly List<Func<Exception, Task>> _errorHandlers = new();
     private readonly List<IBotLoop> _loops = new();
-    private readonly BotRuntime _runtime;
+    private BotRuntime? _runtime;
     
     private CancellationTokenSource? _cts;
     private bool _isRunning;
 
     public bool IsRunning => _isRunning;
-    public ITelegramClient Client => Options.Client;
-    public MessageService Message { get; }
+    internal ITelegramClient Client => Options.Client;
+    public TelegramRequests Requests { get; }
     public BotTaskLoop MainLoop { get; }
     public BotOptions Options { get; }
 
     public TelegramBot(BotOptions options)
     {
         Options = options;
-        _runtime = new BotRuntime(options.UpdateReceiver, options.LoopRunner);
-
-        Message = new MessageService(this);
+        
+        Requests = new TelegramRequests(this);
         MainLoop = new BotTaskLoop(bot: this);
         _loops.Add(MainLoop);
     }
@@ -32,6 +33,9 @@ public sealed class TelegramBot
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _isRunning = true;
+        
+        if (_runtime == null) 
+            _runtime = new BotRuntime(Options.UpdateReceiver!, Options.LoopRunner!);
 
         try
         {
@@ -59,10 +63,17 @@ public sealed class TelegramBot
 
         _cts.Cancel();
         _cts.Dispose();
+        _runtime = null;
         _cts = null;
         _isRunning = false;
         
         return Task.CompletedTask;
+    }
+
+    public async Task Restart()
+    {
+        await Stop();
+        await Run();
     }
 
     public TelegramBot AddUpdateHandler(params Func<Update, Task>[] handlers)
@@ -86,7 +97,12 @@ public sealed class TelegramBot
         }
         
         return this;
-    } 
+    }
+
+    public static TelegramBotBuilder Create(ITelegramClient client)
+    {
+        return new TelegramBotBuilder(client);
+    }
     
     public async Task AddException(Exception exception)
     {

@@ -17,5 +17,4 @@ global using TgCore.Api.Methods;
 global using TgCore.Api.Types;
 global using TgCore.Api.Looping;
 global using TgCore.Api.Runtime;
-global using TgCore.Api.Services;
-global using TgCore.Api.Services.Message;
+global using TgCore.Api.Requests;

@@ -6,6 +6,9 @@ public class TelegramClient : ITelegramClient
 
     public TelegramClient(string token)
     {
+        if (string.IsNullOrWhiteSpace(token))
+            throw new ArgumentNullException(nameof(token));
+        
         _http = new HttpClient
         {
             BaseAddress = new Uri($"https://api.telegram.org/bot{token}/")
@@ -44,6 +47,6 @@ public class TelegramClient : ITelegramClient
         if (apiResponse == null) throw new Exception("Failed to deserialize Telegram response");
         if (!apiResponse.Ok) throw new Exception(apiResponse.Description);
 
-        return apiResponse.Result;
+        return apiResponse.Result!;
     }
 }

@@ -15,4 +15,12 @@ public sealed class ReplyKeyboard : IKeyboardMarkup
     public bool OneTimeKeyboard { get; set; } = true;
 
     public ReplyKeyboard(ReplyButton[][] buttons) => Buttons = buttons;
+
+    public static ReplyKeyboardBuilder Create(
+        string? placeholder = null, 
+        bool resizeKeyboard = true, 
+        bool oneTimeKeyboard = true)
+    {
+        return new ReplyKeyboardBuilder(placeholder, resizeKeyboard, oneTimeKeyboard);
+    }
 }

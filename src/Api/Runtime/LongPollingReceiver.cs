@@ -4,18 +4,24 @@ public class LongPollingReceiver : IUpdateReceiver
 {
     private readonly UpdateType[] _allowedUpdates;
     private readonly ITelegramClient _client;
-
+    
     private int _timeout;
+    private int _limit;
     private long _offset;
 
-    public LongPollingReceiver(ITelegramClient client, UpdateType[] allowedUpdates, long startOffset = 0, int timeout = 30)
+    public LongPollingReceiver(ITelegramClient client, UpdateType[] allowedUpdates, 
+        int limit = 100, 
+        int timeout = 30,
+        long startOffset = 0)
     {
         _allowedUpdates = allowedUpdates;
         _client = client;
+        
+        _limit = Math.Clamp(limit, 1, 100);
+        _timeout = Math.Clamp(timeout, 0, 60);
         _offset = startOffset;
-        _timeout = timeout;
     }
-    
+
     public async Task StartReceiving(
         IReadOnlyList<Func<Update, Task>> updateHandlers, 
         IReadOnlyList<Func<Exception, Task>> errorHandlers, 
@@ -29,6 +35,7 @@ public class LongPollingReceiver : IUpdateReceiver
                 {
                     offset = _offset,
                     timeout = _timeout,
+                    limit = _limit,
                     allowed_updates = BotHelper.GetAllowedUpdatesNames(_allowedUpdates)
                 });
 

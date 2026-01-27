@@ -42,7 +42,7 @@ public class LifetimeModule : ILifetimeModule
             await OnAdd.Invoke(chatId, messageId);
 
         if (UseLogging)
-            Debug.Log($"Temporary message marked in chat {chatId}. Total messages: {GetMessageCount(chatId)}", "LifetimeModule");
+            Debug.Console.Log($"Temporary message marked in chat {chatId}. Total messages: {GetMessageCount(chatId)}", new LogOptions { Category = "LifetimeModule"});
     }
 
     public async Task<bool> Remove(long chatId, long messageId)
@@ -63,21 +63,21 @@ public class LifetimeModule : ILifetimeModule
             await OnDelete.Invoke(chatId, messageId);
 
         if (UseLogging)
-            Debug.Log($"Removing temporary message. Chat {chatId} now has {GetMessageCount(chatId)} messages", "LifetimeModule");
+            Debug.Console.Log($"Removing temporary message. Chat {chatId} now has {GetMessageCount(chatId)} messages", new LogOptions { Category = "LifetimeModule"});
 
         return true;
     }
 
     public async Task<bool> Delete(long chatId, long messageId)
     {
-        var success = await _bot.Message.DeleteMessage(chatId, messageId);
+        var success = await _bot.Requests.DeleteMessage(chatId, messageId);
         var success1= await Remove(chatId, messageId);
         
         if (OnDelete != null)
             await OnDelete.Invoke(chatId, messageId);
 
         if (UseLogging)
-            Debug.Log($"Removing temporary message. Chat {chatId} now has {GetMessageCount(chatId)} messages", "LifetimeModule");
+            Debug.Console.Log($"Removing temporary message. Chat {chatId} now has {GetMessageCount(chatId)} messages", new LogOptions { Category = "LifetimeModule"});
         
         return success1 && success;
     }

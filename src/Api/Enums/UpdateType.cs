@@ -2,7 +2,7 @@ namespace TgCore.Api.Enums;
 
 public enum UpdateType
 {
-    Unknown,
+    Unknown = 0,
     
     // -- Messages --
     Message,
@@ -12,32 +12,32 @@ public enum UpdateType
     EditedChannelPost,
     
     // -- Business --
-    // BusinessConnection,
-    // BusinessMessage,
-    // EditedBusinessMessage,
-    // DeletedBusinessMessages,
+    BusinessConnection,
+    BusinessMessage,
+    EditedBusinessMessage,
+    DeletedBusinessMessages,
     
     // -- Inline --
     InlineQuery,
     ChosenInlineResult,
     
     // -- Reaction & Status --
-    // MessageReaction,
-    // MessageReactionCount,
-    // ChatBoost,
-    // ChatBoostRemoved,
+    MessageReaction,
+    MessageReactionCount,
+    ChatBoost,
+    ChatBoostRemoved,
     
     // -- Polls --
-    // Poll,
-    // PollAnswer,
+    Poll,
+    PollAnswer,
     
     // -- Pay -- 
-    // PreCheckoutQuery,
-    // ShippingQuery,
-    // PurchasedPaidMedia,
+    PreCheckoutQuery,
+    ShippingQuery,
+    PurchasedPaidMedia,
     
     // -- Admin & Members --
-    // ChatMember,
-    // MyChatMember,
-    // ChatJoinRequest
+    ChatMember,
+    MyChatMember,
+    ChatJoinRequest
 }

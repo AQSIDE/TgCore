@@ -38,7 +38,7 @@ public class TemporaryMessageLimiterModule : ITemporaryMessageLimiterModule
                 case TemporaryLimiterMode.ReplaceOldest:
                     if (LifetimeModule == null)
                     {
-                        Debug.LogWarning("ILifetimeModule not set", "TemporaryMessageLimiterModule");
+                        Debug.Console.LogWarning("ILifetimeModule not set", new LogOptions  { Category = "TemporaryMessageLimiterModule"});
                         return false;
                     }
                     
@@ -49,7 +49,7 @@ public class TemporaryMessageLimiterModule : ITemporaryMessageLimiterModule
                 case TemporaryLimiterMode.ReplaceNewest:
                     if (LifetimeModule == null)
                     {
-                        Debug.LogWarning("ILifetimeModule not set", "TemporaryMessageLimiterModule");
+                        Debug.Console.LogWarning("ILifetimeModule not set", new LogOptions  { Category = "TemporaryMessageLimiterModule"});
                         return false;
                     }
                     
@@ -83,7 +83,7 @@ public class TemporaryMessageLimiterModule : ITemporaryMessageLimiterModule
         }
         
         if (UseLogging)
-            Debug.Log($"Message {messageId} add from chat {chatId}. message count: {messageCount}", "TemporaryMessageLimiterModule");
+            Debug.Console.Log($"Message {messageId} add from chat {chatId}. message count: {messageCount}", new LogOptions  { Category = "TemporaryMessageLimiterModule"});
         
         await Task.CompletedTask;
     }
@@ -104,7 +104,7 @@ public class TemporaryMessageLimiterModule : ITemporaryMessageLimiterModule
         }
         
         if (UseLogging)
-            Debug.Log($"Message {messageId} removed from chat {chatId}. Remaining messages: {messageCount}", "TemporaryMessageLimiterModule");
+            Debug.Console.Log($"Message {messageId} removed from chat {chatId}. Remaining messages: {messageCount}", new LogOptions  { Category = "TemporaryMessageLimiterModule"});
         
         await Task.CompletedTask;
     }
