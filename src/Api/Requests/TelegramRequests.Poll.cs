@@ -28,18 +28,19 @@ public partial class TelegramRequests
                     throw new ArgumentException("correctOptionId must be set and within options array bounds for Quiz type.");
             }
             
+            var pm = parseMode ?? _bot.Options.DefaultParseMode;
             var parameters = new TelegramParametersBuilder()
                 .Add("chat_id", chatId)
-                .Add("question", question)
+                .Add("question", TextFormatter?.Process(question, pm) ?? question)
                 .Add("options", options)
                 .Add("type", BotHelper.GetPollType(type))
                 .Add("open_period", openPeriod)
                 .Add("is_anonymous", isAnonymous)
                 .Add("allows_multiple_answers", allowsMultipleAnswers)
                 .Add("correct_option_id", correctOptionId)
-                .Add("explanation",  explanation)
-                .Add("explanation_parse_mode", BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode))
-                .Add("question_parse_mode", BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode))
+                .Add("explanation", string.IsNullOrEmpty(explanation) ? null : TextFormatter?.Process(explanation, pm) ?? explanation)
+                .Add("explanation_parse_mode", BotHelper.GetParseModeName(pm))
+                .Add("question_parse_mode", BotHelper.GetParseModeName(pm))
                 .Add("reply_markup", keyboard)
                 .AddDictionary(defaultParameters?.ToDictionary())
                 .Build();

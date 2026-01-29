@@ -8,6 +8,7 @@ public sealed class BotOptions
     public ParseMode DefaultParseMode { get; set; }
     public ILifetimeModule? Lifetime { get; set; }
     public IRateLimitModule? RateLimit { get; set; }
+    public ITextFormatterModule? TextFormatter { get; set; }
     public ITemporaryMessageLimiterModule? TemporaryMessageLimiter { get; set; }
 
     public BotOptions(
@@ -16,6 +17,7 @@ public sealed class BotOptions
         IBotLoopRunner? loopRunner = null,
         ILifetimeModule? lifetime = null,
         IRateLimitModule? rateLimit = null,
+        ITextFormatterModule? textFormatter = null,
         ITemporaryMessageLimiterModule? temporaryMessageLimiter = null)
     {
         Client = client;
@@ -24,6 +26,7 @@ public sealed class BotOptions
 
         Lifetime = lifetime;
         RateLimit = rateLimit;
+        TextFormatter = textFormatter;
         TemporaryMessageLimiter = temporaryMessageLimiter;
     }
 }

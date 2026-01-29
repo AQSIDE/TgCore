@@ -1,5 +1,6 @@
 using TgCore.Api.Requests.Parameters;
 using TgCore.Api.Types.File;
+using TgCore.Diagnostics.Debugger;
 
 namespace TgCore.Api.Requests;
 
@@ -17,10 +18,11 @@ public partial class TelegramRequests
 
             await ApplyRateLimit();
 
+            var pm = parseMode ?? _bot.Options.DefaultParseMode;
             var parameters = new TelegramParametersBuilder()
                 .Add("chat_id", chatId)
-                .Add("text", text)
-                .Add("parse_mode", BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode))
+                .Add("text", TextFormatter?.Process(text, pm) ?? text)
+                .Add("parse_mode", BotHelper.GetParseModeName(pm))
                 .Add("reply_to_message_id", replyId)
                 .Add("allow_sending_without_reply", true)
                 .Add("reply_markup", keyboard)
@@ -63,15 +65,16 @@ public partial class TelegramRequests
                 _ => throw new NotSupportedException()
             };
             
+            var pm = parseMode ?? _bot.Options.DefaultParseMode;
             var parameters = new TelegramParametersBuilder()
                 .Add("chat_id", chatId)
-                .Add("caption", caption)
+                .Add("caption", string.IsNullOrEmpty(caption) ? null : TextFormatter?.Process(caption, pm) ?? caption)
                 .Add("photo", file.FileType == InputFileType.Photo ? file.GetValue() : null)
                 .Add("video", file.FileType == InputFileType.Video ? file.GetValue() : null)
                 .Add("document", file.FileType == InputFileType.Document ? file.GetValue() : null)
                 .Add("audio", file.FileType == InputFileType.Audio ? file.GetValue() : null)
                 .Add("animation", file.FileType == InputFileType.Animation ? file.GetValue() : null)
-                .Add("parse_mode", BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode))
+                .Add("parse_mode", BotHelper.GetParseModeName(pm))
                 .Add("has_spoiler", file.HasSpoiler)
                 .Add("reply_to_message_id", replyId)
                 .Add("allow_sending_without_reply", true)
@@ -93,7 +96,10 @@ public partial class TelegramRequests
         }
     }
 
-    public async Task<Message[]?> SendMediaGroup(long chatId, InputFile[] files, string? caption = null,
+    public async Task<Message[]?> SendMediaGroup(
+        long chatId, 
+        InputFile[] files, 
+        string? caption = null,
         IKeyboardMarkup? keyboard = null,
         long? replyId = null,
         ParseMode? parseMode = null, 
@@ -106,12 +112,13 @@ public partial class TelegramRequests
 
             await ApplyRateLimit();
 
+            var pm = parseMode ?? _bot.Options.DefaultParseMode;
             var media = files.Select(file => new
             {
                 type = BotHelper.GetMediaType(file.FileType),
                 media = file.GetValue(),
-                caption = file == files.First() ? caption : null,
-                parse_mode = BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode),
+                caption =  string.IsNullOrEmpty(caption) ? null : TextFormatter?.Process(caption, pm) ?? caption,
+                parse_mode = BotHelper.GetParseModeName(pm),
                 has_spoiler = file.HasSpoiler
             }).ToArray();
             

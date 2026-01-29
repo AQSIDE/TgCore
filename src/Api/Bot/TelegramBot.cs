@@ -1,3 +1,4 @@
+using System.Reflection.Emit;
 using TgCore.Api.Modules;
 
 namespace TgCore.Api.Bot;
@@ -14,6 +15,7 @@ public sealed class TelegramBot
 
     public bool IsRunning => _isRunning;
     internal ITelegramClient Client => Options.Client;
+    public ModulesConfigurator Modules { get; }
     public TelegramRequests Requests { get; }
     public BotTaskLoop MainLoop { get; }
     public BotOptions Options { get; }
@@ -24,6 +26,8 @@ public sealed class TelegramBot
         
         Requests = new TelegramRequests(this);
         MainLoop = new BotTaskLoop(bot: this);
+        Modules = new ModulesConfigurator(this);
+        
         _loops.Add(MainLoop);
     }
 

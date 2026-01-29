@@ -31,8 +31,10 @@ Minimum working bot
 ```csharp
 using TgCore;
 
+var client = new TelegramClient("YOUR_BOT_TOKEN");
+
 // 1. Create a bot instance
-var bot = TelegramBot.Create(new TelegramClient("YOUR_BOT_TOKEN")).Build();
+var bot = new TelegramBot(new BotOptions(client));
 
 // 2. Create handlers
 async Task UpdateHandler(Update update)
@@ -80,7 +82,7 @@ async Task UpdateHandler(Update update)
 
         case UpdateType.CallbackQuery:
             // Handle button click
-            await bot.Message.AnswerCallback(update.CallbackQuery!.Id);
+            await bot.Message.AnswerCallbackQuery(update.CallbackQuery!.Id);
             await HandleCallback(update);
             break;
 
@@ -104,7 +106,7 @@ async Task ErrorHandler(Exception exception)
 
 ```csharp
 // Simple text
-await bot.Message.SendText(chatId, "Hello!");
+await bot.Requests.SendText(chatId, "Hello!");
 
 // With formatting
 await bot.Requests.SendText(
@@ -153,10 +155,10 @@ bool success = await bot.Message.DeleteMessage(chatId, messageId);
 **Configuration**
 
 ```csharp
-        var client = new TelegramClient("YOUR_BOT_TOKEN"); // Telegram client (basic implementation)
+var client = new TelegramClient("YOUR_BOT_TOKEN"); // Telegram client (basic implementation)
         
-        bot = TelegramBot
-            .Create(client) // start fluent api
+bot = TelegramBot
+            .Create(client) // start bot building
             .UseUpdateReceiver(new LongPollingReceiver(client, // all updates come here
                 new [] { UpdateType.Message , UpdateType.CallbackQuery}, // allowed updates
                 limit:100, // max update limit
@@ -164,18 +166,22 @@ bool success = await bot.Message.DeleteMessage(chatId, messageId);
                 startOffset:0)) // update id offset
             .UseLoopRunner(new BotLoopRunner()) // boot loop runner
             .UseDefaultParseMode(ParseMode.MarkdownV2) // default parse mode if parameter null
+            .Build();
+        
+_bot.Modules // Configuration modules
             .UseLifetime() // Message deletion time (Lifetime) configuration
             .UseRateLimit(new RateLimitModule( // Request limiting (Rate Limiting) configuration
                 requestsPerSecond:20,  // 20 requests per second
                 maxBurstSize:25)) // Maximum burst
+            .UseTextFormatter() // text formater for parse_mode (beta)
             .UseTemporaryMessageLimiter(new TemporaryMessageLimiterModule( // Temporary message limiter
                     maxMessageLimit:3, // Maximum of 3 temporary messages
                     mode:TemporaryLimiterMode.Reject)) // Mode when the limit is exceeded
-            .Build();
+            .Apply();
         
-        // Subscribe to Lifetime events
-        bot.Options.Lifetime.OnAdd = OnAdd;
-        bot.Options.Lifetime.OnDelete = OnDelete;
+// Subscribe to Lifetime events
+bot.Options.Lifetime.OnAdd = OnAdd;
+bot.Options.Lifetime.OnDelete = OnDelete;                
 );
 ```
 
@@ -192,13 +198,20 @@ public class Program
 
     private static async Task Main()
     {
+        var client = new TelegramClient("YOUR_BOT_TOKEN");
+        
         _bot = TelegramBot
-            .Create(new TelegramClient("YOUR_BOT_TOKEN"))
+            .Create(client)
             .UseDefaultParseMode(ParseMode.MarkdownV2)
+            .UseUpdateReceiver(new LongPollingReceiver(client, _allowedUpdates))
+            .Build();
+        
+        _bot.Modules
             .UseLifetime()
             .UseRateLimit()
+            .UseTextFormatter() // (beta)
             .UseTemporaryMessageLimiter()
-            .Build();
+            .Apply();
 
         _bot.AddUpdateHandler(UpdateHandler)
             .AddErrorHandler(ErrorHandler);

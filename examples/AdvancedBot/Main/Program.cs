@@ -32,14 +32,13 @@ public class Program
                 startOffset:0))
             .UseLoopRunner(new BotLoopRunner())
             .UseDefaultParseMode(ParseMode.MarkdownV2)
-            .UseLifetime()
-            .UseRateLimit(new RateLimitModule(
-                requestsPerSecond:20, 
-                maxBurstSize:25))
-            .UseTemporaryMessageLimiter(new TemporaryMessageLimiterModule(
-                    maxMessageLimit:3, 
-                    mode:TemporaryLimiterMode.Reject))
             .Build();
+        
+        new ModulesConfigurator(_bot)
+            .UseLifetime()
+            .UseRateLimit()
+            .UseTemporaryMessageLimiter()
+            .Apply();
 
         _bot.AddUpdateHandler(UpdateHandler)
             .AddErrorHandler(ErrorHandler);

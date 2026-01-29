@@ -8,6 +8,7 @@ public partial class TelegramRequests
 
     private ILifetimeModule? Lifetime => _bot.Options.Lifetime;
     private IRateLimitModule? RateLimit => _bot.Options.RateLimit;
+    private ITextFormatterModule? TextFormatter => _bot.Options.TextFormatter;
     private ITemporaryMessageLimiterModule? TemporaryMessageLimiter => _bot.Options.TemporaryMessageLimiter;
 
     internal TelegramRequests(TelegramBot bot)

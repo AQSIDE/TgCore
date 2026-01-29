@@ -7,7 +7,7 @@
         <PackageTags>telegram;bot;TgCore;telegram-bot;telegram-bot-api</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         
-        <Version>1.2.0</Version>
+        <Version>1.2.1</Version>
         <Authors>AQSIDE</Authors>
         <Company>AQSIDE</Company>
         <Description>A flexible .NET engine for creating Telegram bots</Description>

@@ -17,11 +17,12 @@ public partial class TelegramRequests
         {
             await ApplyRateLimit();
             
+            var pm = parseMode ?? _bot.Options.DefaultParseMode;
             var parameters = new TelegramParametersBuilder()
                 .Add("chat_id", chatId)
                 .Add("message_id", messageId)
-                .Add("text", text)
-                .Add("parse_mode", BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode))
+                .Add("text", TextFormatter?.Process(text, pm) ?? text)
+                .Add("parse_mode", BotHelper.GetParseModeName(pm))
                 .Add("reply_markup", keyboard)
                 .AddDictionary(shortParameters?.ToDictionary())
                 .Build();
@@ -50,11 +51,12 @@ public partial class TelegramRequests
         {
             await ApplyRateLimit();
             
+            var pm = parseMode ?? _bot.Options.DefaultParseMode;
             var media = new
             {
                 type = BotHelper.GetMediaType(file.FileType),
                 media = file.GetValue(),
-                caption = caption,
+                caption = string.IsNullOrEmpty(caption) ? null : TextFormatter?.Process(caption, pm) ?? caption,
                 parse_mode = caption != null 
                     ? BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode) 
                     : null
@@ -64,18 +66,11 @@ public partial class TelegramRequests
                 .Add("chat_id", chatId)
                 .Add("message_id", messageId)
                 .Add("media", media)
-                .Add("parse_mode", BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode))
                 .Add("reply_markup", keyboard)
                 .AddDictionary(shortParameters?.ToDictionary())
                 .Build();
 
-            var message = await _bot.Client.CallAsync<Message?>(TelegramMethods.EDIT_MESSAGE_MEDIA, new
-            {
-                chat_id = chatId,
-                message_id = messageId,
-                media = media,
-                reply_markup = keyboard
-            });
+            var message = await _bot.Client.CallAsync<Message?>(TelegramMethods.EDIT_MESSAGE_MEDIA, parameters);
 
             return message;
         }
@@ -125,10 +120,11 @@ public partial class TelegramRequests
         {
             await ApplyRateLimit();
             
+            var pm = parseMode ?? _bot.Options.DefaultParseMode;
             var parameters = new TelegramParametersBuilder()
                 .Add("chat_id", chatId)
                 .Add("message_id", messageId)
-                .Add("caption", caption)
+                .Add("caption", TextFormatter?.Process(caption, pm) ?? caption)
                 .Add("parse_mode", BotHelper.GetParseModeName(parseMode ?? _bot.Options.DefaultParseMode))
                 .Add("reply_markup", keyboard)
                 .Add("show_caption_above_media", showCaptionAboveMedia)

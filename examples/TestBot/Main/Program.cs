@@ -21,12 +21,16 @@ class Program
         
         _bot = TelegramBot
             .Create(client)
-            .UseDefaultParseMode(ParseMode.HTML)
+            .UseDefaultParseMode(ParseMode.MarkdownV2)
             .UseUpdateReceiver(new LongPollingReceiver(client, _allowedUpdates))
+            .Build();
+        
+        _bot.Modules
             .UseLifetime()
             .UseRateLimit()
+            .UseTextFormatter()
             .UseTemporaryMessageLimiter()
-            .Build();
+            .Apply();
 
         _bot.AddUpdateHandler(UpdateHandler)
             .AddErrorHandler(ErrorHandler);
