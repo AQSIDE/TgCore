@@ -1,6 +1,6 @@
 namespace TgCore.Api.Types.Business;
 
-public class BusinessMessagesDeleted
+public sealed class BusinessMessagesDeleted
 {
     [JsonPropertyName("business_connection_id")]
     public string Id { get; set; } = string.Empty;

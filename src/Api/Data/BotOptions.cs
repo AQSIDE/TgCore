@@ -1,3 +1,5 @@
+using TgCore.Api.Systems.Telemetry;
+
 namespace TgCore.Api.Data;
 
 public sealed class BotOptions
@@ -6,16 +8,19 @@ public sealed class BotOptions
     public IUpdateReceiver? UpdateReceiver { get; set; }
     public IBotLoopRunner? LoopRunner { get; set; }
     public ParseMode DefaultParseMode { get; set; }
-    public ILifetimeModule? Lifetime { get; set; }
+    public IMessageLifetimeModule? Lifetime { get; set; }
     public IRateLimitModule? RateLimit { get; set; }
     public ITextFormatterModule? TextFormatter { get; set; }
     public ITemporaryMessageLimiterModule? TemporaryMessageLimiter { get; set; }
+    
+    public bool InitialUseTelemetry { get; set; }
+    public TelemetryConfig? InitialTelemetryConfig { get; set; }
 
     public BotOptions(
         ITelegramClient client,
         IUpdateReceiver? updateReceiver = null,
         IBotLoopRunner? loopRunner = null,
-        ILifetimeModule? lifetime = null,
+        IMessageLifetimeModule? lifetime = null,
         IRateLimitModule? rateLimit = null,
         ITextFormatterModule? textFormatter = null,
         ITemporaryMessageLimiterModule? temporaryMessageLimiter = null)

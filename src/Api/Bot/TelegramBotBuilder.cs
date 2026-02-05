@@ -1,3 +1,5 @@
+using TgCore.Api.Systems.Telemetry;
+
 namespace TgCore.Api.Bot;
 
 public class TelegramBotBuilder
@@ -24,6 +26,13 @@ public class TelegramBotBuilder
     public TelegramBotBuilder UseLoopRunner(IBotLoopRunner runner)
     {
         _options.LoopRunner = runner;
+        return this;
+    }
+
+    public TelegramBotBuilder UseTelemetry(TelemetryConfig? config = null)
+    {
+        _options.InitialUseTelemetry = true;
+        _options.InitialTelemetryConfig = config;
         return this;
     }
 

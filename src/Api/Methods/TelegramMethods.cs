@@ -31,6 +31,7 @@ public static class TelegramMethods
     public const string EDIT_MESSAGE_LIVE_LOCATION = "editMessageLiveLocation";
     public const string STOP_MESSAGE_LIVE_LOCATION = "stopMessageLiveLocation";
     public const string DELETE_MESSAGE = "deleteMessage";
+    public const string DELETE_MESSAGES = "deleteMessages";
     public const string FORWARD_MESSAGE = "forwardMessage";
     public const string COPY_MESSAGE = "copyMessage";
     public const string PIN_CHAT_MESSAGE = "pinChatMessage";

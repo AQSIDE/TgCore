@@ -20,6 +20,7 @@ public class StartCommand : TelegramCommand
         sb.AppendLine("*/start* - Send this message");
         sb.AppendLine("*/get\\_me* - Send get me message");
         sb.AppendLine("*/text* - Send text message");
+        sb.AppendLine("*/temporary_message* - Send temporary message");
         sb.AppendLine("*/photo* - Send photo message");
         sb.AppendLine("*/video* - Send video message");
         sb.AppendLine("*/audio* - Send audio message");
@@ -30,6 +31,7 @@ public class StartCommand : TelegramCommand
         sb.AppendLine("*/quiz* - Send quiz message");
         sb.AppendLine("*/inline* - Send inline markup message");
         sb.AppendLine("*/reply* - Send reply markup message");
+        sb.AppendLine("*/error* - Execute error");
 
         await _bot.Requests.SendText(chatId, sb.ToString(), replyId: messageId);
     }

@@ -1,3 +1,5 @@
+using TgCore.Api.Systems.Telemetry;
+
 namespace TgCore.Api.Runtime;
 
 internal sealed class BotRuntime
@@ -14,13 +16,14 @@ internal sealed class BotRuntime
     }
 
     public async Task RunAsync(
-        IReadOnlyList<Func<Update, Task>> updateHandlers,
-        IReadOnlyList<Func<Exception, Task>> errorHandlers,
+        IReadOnlyList<Func<Update, CancellationToken, Task>> updateHandlers,
+        IReadOnlyList<Func<Exception, CancellationToken, Task>> errorHandlers,
         IReadOnlyList<IBotLoop> loops,
+        TelemetrySystem telemetry,
         CancellationToken ct)
     {
         await Task.WhenAll(
-            _receiver.StartReceiving(updateHandlers, errorHandlers, ct),
+            _receiver.StartReceiving(updateHandlers, errorHandlers, telemetry, ct),
             _loopRunner.StartAsync(loops, errorHandlers, ct)
         );
     }

@@ -20,11 +20,11 @@ public class BotMainMessageService
         {
             var message = await _bot.Requests.SendText(userId, text, keyboard, replyId);
             
-            if (message != null)
-                _messages[userId] = new MainMessageContext(message, keyboard);
+            if (message.Result != null)
+                _messages[userId] = new MainMessageContext(message.Result, keyboard);
 
-            if (otherMessageId != null && message != null)
-                await DeleteOtherMessages(userId, message.Id, otherMessageId.Value);
+            if (otherMessageId != null && message.Result != null)
+                await DeleteOtherMessages(userId, message.Result.Id, otherMessageId.Value);
         }
         catch (Exception ex)
         {

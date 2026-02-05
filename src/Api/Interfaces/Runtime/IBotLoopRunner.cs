@@ -4,6 +4,6 @@ public interface IBotLoopRunner
 {
     Task StartAsync(
         IReadOnlyList<IBotLoop> loops,
-        IReadOnlyList<Func<Exception, Task>> errorHandlers,
+        IReadOnlyList<Func<Exception, CancellationToken, Task>> errorHandlers,
         CancellationToken ct);
 }

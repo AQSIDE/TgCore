@@ -19,7 +19,7 @@ public class TextFormatterModule : ITextFormatterModule
     private readonly HashSet<char> _mdTags = new()
         { '_', '*', '~', '`' };
 
-    public bool UseLogging { get; set; } = true;
+    public bool UseLogging { get; set; }
 
     public string Process(string text, ParseMode mode)
     {

@@ -31,21 +31,19 @@ Minimum working bot
 ```csharp
 using TgCore;
 
-var client = new TelegramClient("YOUR_BOT_TOKEN");
-
 // 1. Create a bot instance
-var bot = new TelegramBot(new BotOptions(client));
+var bot = TelegramBot.Default("YOUR_BOT_TOKEN");
 
 // 2. Create handlers
-async Task UpdateHandler(Update update)
+async Task UpdateHandler(Update update, CancellationToken ct)
 {
     if (update.Type == UpdateType.Message && update.Text != null)
     {
-        await bot.Requests.SendText(update.GetFrom!.Id, $"You said: {update.Text}");
+        await bot.Requests.SendText(update.GetFrom!.Id, $"You said: {update.Text}", ct:ct);
     }
 }
 
-async Task ErrorHandler(Exception exception)
+async Task ErrorHandler(Exception exception, CancellationToken ct)
 {
     Console.WriteLine($"Error: {exception.Message}");
 }
@@ -70,20 +68,20 @@ await bot.Restart();
 Handles all user actions:
 
 ```csharp
-async Task UpdateHandler(Update update)
+async Task UpdateHandler(Update update, CancellationToken ct)
 {
     // Determine the event type
     switch (update.Type)
     {
         case UpdateType.Message:
             // Work with the message
-            await HandleMessage(update);
+            await HandleMessage(update, ct);
             break;
 
         case UpdateType.CallbackQuery:
             // Handle button click
-            await bot.Message.AnswerCallbackQuery(update.CallbackQuery!.Id);
-            await HandleCallback(update);
+            await bot.Message.AnswerCallbackQuery(update.CallbackQuery!.Id, ct:ct);
+            await HandleCallback(update, ct);
             break;
 
         // Other update types...
@@ -95,7 +93,7 @@ async Task UpdateHandler(Update update)
 Handles all API errors:
 
 ```csharp
-async Task ErrorHandler(Exception exception)
+async Task ErrorHandler(Exception exception, CancellationToken ct)
 {
     // Log the error
     Console.WriteLine($"Error: {exception}");
@@ -140,7 +138,8 @@ var result = await bot.Requests.SendRequest<Message>(
         photo = "https://example.com/photo.jpg",
         caption = "Photo via direct request",
         reply_markup = new { inline_keyboard = new[] { new[] { new { text = "Test", callback_data = "test" } } } }
-    }
+    }, 
+    ct:ct
 );
 
 if (result.Ok)
@@ -149,40 +148,49 @@ if (result.Ok)
 }
 
 // Deletion
-bool success = await bot.Message.DeleteMessage(chatId, messageId);
+bool success = await bot.Requests.DeleteMessage(chatId, messageId);
 ```
 
 **Configuration**
 
 ```csharp
-var client = new TelegramClient("YOUR_BOT_TOKEN"); // Telegram client (basic implementation)
-        
+var client = new TelegramClient("YOUR_BOT_TOKEN"); // Telegram client (base implementation)
+
 bot = TelegramBot
-            .Create(client) // start bot building
-            .UseUpdateReceiver(new LongPollingReceiver(client, // all updates come here
-                new [] { UpdateType.Message , UpdateType.CallbackQuery}, // allowed updates
-                limit:100, // max update limit
-                timeout:30, // long polling timeout
-                startOffset:0)) // update id offset
-            .UseLoopRunner(new BotLoopRunner()) // boot loop runner
-            .UseDefaultParseMode(ParseMode.MarkdownV2) // default parse mode if parameter null
-            .Build();
-        
-_bot.Modules // Configuration modules
-            .UseLifetime() // Message deletion time (Lifetime) configuration
-            .UseRateLimit(new RateLimitModule( // Request limiting (Rate Limiting) configuration
-                requestsPerSecond:20,  // 20 requests per second
-                maxBurstSize:25)) // Maximum burst
-            .UseTextFormatter() // text formater for parse_mode (beta)
-            .UseTemporaryMessageLimiter(new TemporaryMessageLimiterModule( // Temporary message limiter
-                    maxMessageLimit:3, // Maximum of 3 temporary messages
-                    mode:TemporaryLimiterMode.Reject)) // Mode when the limit is exceeded
-            .Apply();
-        
-// Subscribe to Lifetime events
+    .Create(client) // Start bot builder
+    .UseUpdateReceiver(
+        new LongPollingReceiver(
+            client,                                     // Source of incoming updates
+            new[] { UpdateType.Message, UpdateType.CallbackQuery }, // Allowed update types
+            limit: 100,                                 // Maximum updates per request
+            timeout: 30,                                // Long polling timeout (seconds)
+            startOffset: 0                              // Update ID offset
+        )
+    )
+    .UseLoopRunner(new BotLoopRunner())                // Start bot loop runner
+    .UseTelemetry()                                    // Enable automatic telemetry
+    .UseDefaultParseMode(ParseMode.MarkdownV2)         // Default parse mode if not specified
+    .Build();
+
+bot.Modules                                            // Configure modules
+    .UseMessageLifetime()                              // Message lifetime (auto-delete) module
+    .UseRateLimit(new RateLimitModule(
+        maxTokens: 20,                                 // Max 20 requests per second
+        maxBurst: 3,                                   // Allowed burst size
+        interval: TimeSpan.FromSeconds(1)
+    ))
+    .UseTextFormatter()                                // Text formatter for parse_mode (beta)
+    .UseTemporaryMessageLimiter(
+        new TemporaryMessageLimiterModule(             // Temporary message limiter
+            maxMessageLimit: 3,                         // Maximum 3 temporary messages
+            mode: TemporaryLimiterMode.Reject           // Behavior when limit is exceeded
+        )
+    )
+    .Apply();
+
+// Subscribe to message lifetime events
 bot.Options.Lifetime.OnAdd = OnAdd;
-bot.Options.Lifetime.OnDelete = OnDelete;                
-);
+bot.Options.Lifetime.OnDelete = OnDelete;
 ```
 
 **Advanced architecture**
@@ -203,11 +211,12 @@ public class Program
         _bot = TelegramBot
             .Create(client)
             .UseDefaultParseMode(ParseMode.MarkdownV2)
+            .UseTelemetry(new TelemetryConfig(interval:TimeSpan.FromMinutes(10)))
             .UseUpdateReceiver(new LongPollingReceiver(client, _allowedUpdates))
             .Build();
         
         _bot.Modules
-            .UseLifetime()
+            .UseMessageLifetime()
             .UseRateLimit()
             .UseTextFormatter() // (beta)
             .UseTemporaryMessageLimiter()
@@ -224,15 +233,15 @@ public class Program
         await _bot.Run();
     }
 
-    private static async Task UpdateHandler(Update update)
+    private static async Task UpdateHandler(Update update, CancellationToken ct)
     {
         var ctx = _contextFactory.CreateContext(update);
         if (ctx == null) return;
 
-        await _routerManager.Route(ctx);
+        await _routerManager.Route(ctx, ct);
     }
 
-    private static async Task ErrorHandler(Exception ex)
+    private static async Task ErrorHandler(Exception exception, CancellationToken ct)
     {
         Debug.LogError(ex.ToString());
     }
@@ -288,9 +297,6 @@ bot.AddLoop(new YourLoop(100));
 // No need to create manually, it is already included in TelegramBot:
 // bot.MainLoop
 public class BotTaskLoop : IBotLoop
-{
-    // Implementation details are handled internally
-}
     
 // Example: Adding a delayed task using Func<Task>
 bot.MainLoop.AddTask(
@@ -305,14 +311,149 @@ bot.MainLoop.AddRepeatingTask(
     DateTime.Now.AddSeconds(5)  // Start time for the first execution
 );
 ```
+## Telemetry
+**Telemetry is a system that collects runtime data about everything that is happening inside your bot.
+It is designed to help you understand bot behavior, performance, errors, and usage patterns in real time.**
+
+```csharp
+// Fluent API usage
+bot = TelegramBot
+    .Create(client)
+    .UseTelemetry() // Enable telemetry here
+    .Build();
+
+// OR via options 
+
+var options = new BotOptions(client) 
+{
+    InitialUseTelemetry = true
+};
+```
+
+**Telemetry uses a configuration object to control memory usage, compatibility, and behavior.**
+All limits exist to prevent uncontrolled memory growth.
+
+```csharp
+public TelemetryConfig(
+    bool useAutoLog = true,        // Enable automatic logging to console
+    TimeSpan? interval = null,     // Interval between snapshot reports
+    int maxRequests = 30,          // Maximum stored HTTP requests
+    int maxUpdates = 30,           // Maximum stored updates
+    int maxUpdateHandlers = 30,    // Maximum stored UpdateHandler executions
+    int maxErrorHandlers = 30,     // Maximum stored ErrorHandler executions
+    int maxUsers = 30,             // Maximum stored users
+    int maxChats = 30,             // Maximum stored chats
+    int maxErrors = 30,            // Maximum stored errors
+    int maxInteractionContext = 10,// Stored interaction context per user/chat
+    bool allowPrivateChat = false  // Include private chats in chat statistics
+)
+```
+
+**What Telemetry Stores**
+Each telemetry report is represented by a snapshot, which contains aggregated and detailed runtime data.
+
+```csharp
+public sealed class TelemetrySnapshotDto
+{
+    // Unique snapshot identifier
+    public long Id { get; init; }
+    
+    // Snapshot creation time
+    public DateTime Timestamp { get; init; }
+
+    // Updates received during the current period
+    public long PeriodUpdates { get; init; }
+    
+    // Updates received since bot start
+    public long TotalUpdates { get; init; }
+
+    // HTTP request counters
+    public long PeriodRequests { get; init; }
+    public long TotalRequests { get; init; }
+    
+    public long PeriodSuccessfulRequests { get; init; }
+    public long PeriodFailedRequests { get; init; }
+    public long TotalSuccessfulRequests { get; init; }
+    public long TotalFailedRequests { get; init; }
+
+    // Error counters
+    public long PeriodErrors { get; init; }
+    public long TotalErrors { get; init; }
+
+    // Unique users
+    public long PeriodUniqueUsers { get; init; }
+    public long TotalUniqueUsers { get; init; }
+    
+    // Unique chats
+    public long PeriodUniqueChats { get; init; }
+    public long TotalUniqueChats { get; init; }
+
+    // Derived metrics
+    public double UpdatesPerUser { get; init; }
+    public double RequestsPerUser { get; init; }
+    
+    public double UpdatesPerChat { get; init; }
+    public double RequestsPerChat { get; init; }
+
+    // Latency statistics (avg / min / max)
+    public TelemetryLatencyStats UpdateHandlerLatency { get; init; }
+    public TelemetryLatencyStats ErrorHandlerLatency { get; init; }
+    public TelemetryLatencyStats HTTPLatency { get; init; }
+
+    // Detailed runtime data
+    public List<TelemetryUserDto> Users { get; init; }
+    public List<TelemetryChatDto> Chats { get; init; }
+    public List<TelemetryUpdateDto> Updates { get; init; }
+    public List<TelemetryRequestDto> Requests { get; init; }
+    public List<TelemetryErrorDto> Errors { get; init; }
+
+    // Error classification
+    public List<ApiErrorStats> ApiErrors { get; init; }
+    public List<LocalErrorStats> LocalErrors { get; init; }
+}
+```
+
+**Using Telemetry at Runtime**
+
+```csharp
+bot.Telemetry.Config;               // Access current telemetry configuration
+bot.Telemetry.Enabled;              // Enable / disable telemetry collection
+bot.Telemetry.LastAutoLogMessage;   // Last auto-log message
+bot.Telemetry.LastSnapshot;         // Get last snapshot (can be null)
+bot.Telemetry.GetSnapshot();        // Force snapshot creation
+bot.Telemetry.Update(s => s.ClearUniqueCache()); // Apply snapshot update
+
+// Report Subscription
+// You can subscribe to telemetry reports and handle them manually.
+
+bot.Telemetry.OnReport = OnReport;
+bot.Telemetry.Config.UseAutoLog = false; // Recommended when using OnReport
+
+// Called asynchronously on each report
+// lastSnapshot can be null (first report)
+async Task OnReport(
+    TelemetrySnapshotDto snapshot,
+    TelemetrySnapshotDto? lastSnapshot)
+{
+    // Custom processing (logging, metrics export, alerts, etc.)
+}
+```
+
+**Important Notes.** Telemetry permanently stores unique user and chat IDs to provide accurate lifetime statistics. This cache is not cleared automatically.
+To manually reset unique user/chat counters, use:
+
+```csharp
+bot.Telemetry.Update(s => s.ClearUniqueCache());
+```
+
 ## Modules
 Modules are built-in features that simplify working with the API.
 
-**ILifetimeModule**
+**IMessageLifetimeModule**
 Manages message lifetime and allows automatic deletion after a set time.
 
 ```csharp
-public interface ILifetimeModule
+public interface IMessageLifetimeModule
 {
     // Invoked when a message is added.
     // Parameters: long chatId/userId, long messageId
@@ -336,7 +477,7 @@ public interface ILifetimeModule
 }
 
 // Activating the module
-bot.Options.Lifetime = new LifetimeModule(_bot, _bot.MainLoop)
+bot.Options.Lifetime = new MessageLifetimeModule(_bot, _bot.MainLoop)
 {
     // Enable module logging
     UseLogging = true
@@ -362,8 +503,9 @@ public interface IRateLimitModule
 
 // Activating the module
 bot.Options.RateLimit = new RateLimitModule(
-            requestsPerSecond:20,   // Maximum 20 requests per second
-            maxBurstSize:25);       // Maximum burst size
+            maxTokens:20,                       // Maximum 20 requests per second
+            maxBurst:3,                         // Maximum burst size
+            interval: TimeSpan.FromSeconds(1)); // interval
 ```
 
 **ITemporaryMessageLimiterModule**
@@ -387,7 +529,7 @@ public interface ITemporaryMessageLimiterModule
 
 // Activating the module
 _bot.Options.TemporaryMessageLimiter = new TemporaryMessageLimiterModule(
-            maxMessageLimit:3,                         // Maximum of 3 temporary messages
+            maxMessageLimit:3,                         // Maximum of 3 temporary messages for user/chat
             mode:TemporaryLimiterMode.ReplaceOldest,  // Mode when the limit is exceeded
             lifetimeModule:_bot.Options.Lifetime)     // Uses ILifetimeModule
         {
@@ -401,5 +543,39 @@ public enum TemporaryLimiterMode
     Reject,         // Limit exceeded: the new message will not be sent
     ReplaceOldest,  // Deletes the oldest message and sends the new one
     ReplaceNewest   // Deletes the newest message, keeping the old one
+}
+```
+
+**ITextFormatterModule**
+Automatically formats outgoing message text. This module is applied when text is sent as part of a request.
+
+**Why this exists.**
+Telegram will throw a BadRequest error if the message contains invalid or unclosed Markdown tags.
+TextFormatterModule automatically fixes such cases, making message sending safer and more predictable.
+
+```csharp
+public interface ITextFormatterModule
+{
+    string Process(string text, ParseMode mode);
+}
+```
+
+**Default Implementation**
+
+```csharp
+// Formats text if it contains unclosed tags.
+// Applied to Markdown and MarkdownV2 to prevent BadRequest errors.
+public class TextFormatterModule : ITextFormatterModule
+
+public string Process(string text, ParseMode mode)
+{
+    if (mode == ParseMode.None) return text;
+
+    if (mode == ParseMode.Markdown)
+        text = ProcessMarkdown(text, mode);
+    else if (mode == ParseMode.MarkdownV2)
+        text = ProcessMarkdownV2(text, mode);
+
+    return text;
 }
 ```

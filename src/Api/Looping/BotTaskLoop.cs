@@ -24,7 +24,7 @@ public class BotTaskLoop : IBotLoop
         _tasks.Add(new ScheduledTask(action, executeAt, interval));
     }
 
-    public async Task OnTick()
+    public async Task OnTick(CancellationToken ct = default)
     {
         if (_tasks.Count == 0) return;
         
@@ -40,7 +40,7 @@ public class BotTaskLoop : IBotLoop
             catch (Exception ex)
             {
                 if (_bot != null)
-                    await _bot.AddException(ex);
+                    await _bot.AddException(ex, ct);
             }
             finally
             {

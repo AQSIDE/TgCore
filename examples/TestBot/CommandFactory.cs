@@ -23,6 +23,8 @@ public class CommandFactory
         _commands.Add(new ReplyCommand(bot)); 
         _commands.Add(new MediaGroupCommand(bot)); 
         _commands.Add(new DiceCommand(bot)); 
+        _commands.Add(new ErrorCommand(bot)); 
+        _commands.Add(new TemporaryMessageCommand(bot)); 
     }
 
     public bool GetCommand(string commandName, out ITelegramCommand? command)

@@ -2,7 +2,7 @@ using TgCore.Diagnostics.Debugger;
 
 namespace TgCore.Api.Modules;
 
-public class LifetimeModule : ILifetimeModule
+public class MessageLifetimeModule : IMessageLifetimeModule
 {
     private readonly Dictionary<long, List<(long, DateTime)>> _messages = new();
     private readonly object _lock = new();
@@ -12,7 +12,7 @@ public class LifetimeModule : ILifetimeModule
     public Func<long, long, Task>? OnDelete { get; set; }
     public bool UseLogging { get; set; }
 
-    public LifetimeModule(
+    public MessageLifetimeModule(
         TelegramBot bot,
         BotTaskLoop loop,
         Func<long, long, Task>? onAdd = null,
@@ -70,16 +70,25 @@ public class LifetimeModule : ILifetimeModule
 
     public async Task<bool> Delete(long chatId, long messageId)
     {
-        var success = await _bot.Requests.DeleteMessage(chatId, messageId);
-        var success1= await Remove(chatId, messageId);
-        
-        if (OnDelete != null)
-            await OnDelete.Invoke(chatId, messageId);
+        return await DeleteMessages(chatId, new[] {messageId});
+    }
 
-        if (UseLogging)
-            Debug.Console.Log($"Removing temporary message. Chat {chatId} now has {GetMessageCount(chatId)} messages", new LogOptions { Category = "LifetimeModule"});
+    private async Task<bool> DeleteMessages(long chatId, long[] messageIds)
+    {
+        var success = await _bot.Requests.DeleteMessages(chatId, messageIds);
+
+        foreach (var messageId in messageIds)
+        {
+            await Remove(chatId, messageId);
+            
+            if (OnDelete != null)
+                await OnDelete.Invoke(chatId, messageId);
+        }
         
-        return success1 && success;
+        if (UseLogging)
+            Debug.Console.Log($"Removing temporary messages {messageIds.Length}. Chat {chatId} now has {GetMessageCount(chatId)} messages", new LogOptions { Category = "LifetimeModule"});
+        
+        return success.Ok;
     }
 
     public void ClearMessages(long chatId)
@@ -108,7 +117,7 @@ public class LifetimeModule : ILifetimeModule
 
     private async Task CheckForDelete()
     {
-        var messagesToDelete = new List<(long, long)>();
+        var messagesToDelete = new Dictionary<long, List<long>>();
 
         lock (_lock)
         {
@@ -127,7 +136,12 @@ public class LifetimeModule : ILifetimeModule
                     var expiresAt = message.Item2;
 
                     if (expiresAt < now)
-                        messagesToDelete.Add((userId, messageId));
+                    {
+                        if (!messagesToDelete.ContainsKey(userId))
+                            messagesToDelete[userId] = new List<long>();
+
+                        messagesToDelete[userId].Add(messageId);
+                    }
                 }
             }
         }
@@ -136,11 +150,14 @@ public class LifetimeModule : ILifetimeModule
             await DeleteMessages(messagesToDelete);
     }
 
-    private async Task DeleteMessages(List<(long, long)> toDelete)
+    private async Task DeleteMessages(Dictionary<long, List<long>> toDelete)
     {
-        foreach (var message in toDelete)
+        foreach (var kvp in toDelete)
         {
-            await Delete(message.Item1, message.Item2);
+            var chatId = kvp.Key;
+            var messageIds = kvp.Value.ToArray();
+
+            await DeleteMessages(chatId, messageIds);
         }
     }
 

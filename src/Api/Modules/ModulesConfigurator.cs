@@ -5,7 +5,7 @@ public class ModulesConfigurator
     private readonly TelegramBot _bot;
 
     private IRateLimitModule? _rateLimitModule;
-    private ILifetimeModule? _lifetimeModule;
+    private IMessageLifetimeModule? _lifetimeModule;
     private ITextFormatterModule? _textFormatterModule;
     private ITemporaryMessageLimiterModule? _temporaryMessageLimiterModule;
 
@@ -26,7 +26,7 @@ public class ModulesConfigurator
         return this;
     }
 
-    public ModulesConfigurator UseLifetime(ILifetimeModule? module = null)
+    public ModulesConfigurator UseMessageLifetime(IMessageLifetimeModule? module = null)
     {
         _useLifetime = true;
         _lifetimeModule = module;
@@ -51,9 +51,9 @@ public class ModulesConfigurator
     {
         if (_useTextFormatter)
             _bot.Options.TextFormatter = _textFormatterModule ?? new TextFormatterModule();
-        
+
         if (_useLifetime)
-            _bot.Options.Lifetime = _lifetimeModule ?? new LifetimeModule(_bot, _bot.MainLoop);
+            _bot.Options.Lifetime = _lifetimeModule ?? new MessageLifetimeModule(_bot, _bot.MainLoop);
 
         if (_useRateLimit)
             _bot.Options.RateLimit = _rateLimitModule ?? new RateLimitModule();

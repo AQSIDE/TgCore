@@ -3,5 +3,5 @@ namespace TgCore.Api.Interfaces;
 public interface IBotLoop
 {
     int IntervalMs { get; }
-    Task OnTick();
+    Task OnTick(CancellationToken ct = default);
 }

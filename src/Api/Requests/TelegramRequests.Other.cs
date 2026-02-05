@@ -1,64 +1,32 @@
 using TgCore.Api.Requests.Parameters;
+using TgCore.Api.Systems.Telemetry.Data;
 
 namespace TgCore.Api.Requests;
 
 public partial class TelegramRequests
 {
-    public async Task<User?> GetMe()
+    public async Task<RequestResponse<User>> GetMe(CancellationToken ct = default)
     {
-        try
-        {
-            await ApplyRateLimit();
-
-            var user = await _bot.Client.CallAsync<User?>(TelegramMethods.GET_ME);
-            return user;
-        }
-        catch (Exception ex)
-        {
-            await _bot.AddException(ex);
-            return null;
-        }
+        return await SendRequest<User>(TelegramMethods.GET_ME, null, ct:ct);
     }
     
-    public async Task<ChatFullInfo?> GetChat()
+    public async Task<RequestResponse<ChatFullInfo>> GetChat(CancellationToken ct = default)
     {
-        try
-        {
-            await ApplyRateLimit();
-
-            var info = await _bot.Client.CallAsync<ChatFullInfo?>(TelegramMethods.GET_CHAT);
-            return info;
-        }
-        catch (Exception ex)
-        {
-            await _bot.AddException(ex);
-            return null;
-        }
+        return await SendRequest<ChatFullInfo>(TelegramMethods.GET_CHAT, body: null, ct: ct);
     }
     
-    public async Task<Message?> SendChatAction(
+    public async Task<RequestResponse<Message>> SendChatAction(
         long chatId,
         string action,
-        ShortParameters? shortParameters = null)
+        ShortParameters? shortParameters = null, 
+        CancellationToken ct = default)
     {
-        try
-        {
-            await ApplyRateLimit();
-            
-            var parameters = new TelegramParametersBuilder()
-                .Add("chat_id", chatId)
-                .Add("action",action)
-                .AddDictionary(shortParameters?.ToDictionary())
-                .Build();
-
-            var message = await _bot.Client.CallAsync<Message?>(TelegramMethods.SEND_DICE, parameters);
-
-            return message;
-        }
-        catch (Exception ex)
-        {
-            await _bot.AddException(ex);
-            return null;
-        }
+        var parameters = new TelegramParametersBuilder()
+            .Add("chat_id", chatId)
+            .Add("action",action)
+            .AddDictionary(shortParameters?.ToDictionary())
+            .Build();
+        
+        return await SendRequest<Message>(TelegramMethods.SEND_DICE, parameters, ct);
     }
 }

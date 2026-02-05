@@ -1,11 +1,10 @@
-using TgCore.Api.Bot;
-
 namespace TgCore.Sdk.Data.Context;
 
 public abstract class BotContext
 {
     public Update Update { get; }
     public TelegramBot? Bot { get; }
+    public CancellationToken Ct { get; }
     
     public User? GetFrom => Update.GetFrom;
     public Chat? GetChat => Update.GetChat;
@@ -19,9 +18,10 @@ public abstract class BotContext
     public string? CallbackData => Update.CallbackData;
     public string? Text => Update.Text;
 
-    protected BotContext(Update update, TelegramBot? bot = null)
+    protected BotContext(Update update, TelegramBot? bot = null, CancellationToken ct = default)
     {
         Update = update;
         Bot = bot;
+        Ct = ct;
     }
 }

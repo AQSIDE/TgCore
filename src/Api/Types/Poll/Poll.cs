@@ -44,16 +44,6 @@ public sealed class Poll
     [JsonPropertyName("close_date")]
     public int CloseDate { get; set; }
 
-    public PollType Type()
-    {
-        switch (TypeString)
-        {
-            case "quiz":
-                return PollType.Quiz;
-            case "regular":
-                return PollType.Regular;
-            default:
-                throw new Exception("Unknown type");
-        }
-    }
+    [JsonIgnore]
+    public PollType Type => BotHelper.GetPollType(TypeString);
 }

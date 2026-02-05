@@ -15,7 +15,7 @@ public class GetMeCommand : TelegramCommand
         
         await _bot.Requests.SendText(
             chatId,
-            $"👋 Hello! I am <b>{user?.FirstName}</b> (@{user?.Username})",
+            $"👋 Hello! I am <b>{user?.Result?.FirstName}</b> (@{user?.Result?.Username})",
             replyId: messageId
         );
     }

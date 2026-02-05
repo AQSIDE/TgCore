@@ -4,7 +4,7 @@ public class BotLoopRunner : IBotLoopRunner
 {
     public async Task StartAsync(
         IReadOnlyList<IBotLoop> loops,
-        IReadOnlyList<Func<Exception, Task>> errorHandlers,
+        IReadOnlyList<Func<Exception, CancellationToken, Task>> errorHandlers,
         CancellationToken ct)
     {
         var tasks = loops.Select(loop =>
@@ -14,11 +14,11 @@ public class BotLoopRunner : IBotLoopRunner
                 {
                     try
                     {
-                        await loop.OnTick();
+                        await loop.OnTick(ct);
                     }
                     catch (Exception ex)
                     {
-                        await Task.WhenAll(errorHandlers.Select(h => h(ex)));
+                        await Task.WhenAll(errorHandlers.Select(h => h(ex, ct)));
                     }
 
                     await Task.Delay(loop.IntervalMs, ct);

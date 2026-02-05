@@ -1,12 +1,16 @@
-using TgCore.Diagnostics.Debugger;
+using System.Diagnostics;
+using TgCore.Api.Systems.Telemetry;
+using TgCore.Api.Systems.Telemetry.Data;
+using Debug = TgCore.Diagnostics.Debugger.Debug;
 
 namespace TgCore.Api.Requests;
 
 public partial class TelegramRequests
 {
     private readonly TelegramBot _bot;
-
-    private ILifetimeModule? Lifetime => _bot.Options.Lifetime;
+    
+    private TelemetrySystem Telemetry => _bot.Telemetry;
+    private IMessageLifetimeModule? Lifetime => _bot.Options.Lifetime;
     private IRateLimitModule? RateLimit => _bot.Options.RateLimit;
     private ITextFormatterModule? TextFormatter => _bot.Options.TextFormatter;
     private ITemporaryMessageLimiterModule? TemporaryMessageLimiter => _bot.Options.TemporaryMessageLimiter;
@@ -19,19 +23,52 @@ public partial class TelegramRequests
             Lifetime.OnDelete = UnregisterTemporaryMessage;
     }
     
-    public async Task<(bool Ok, T? Result)> SendRequest<T>(string method, object? body = null,
-        JsonSerializerOptions? options = null)
+    public async Task<RequestResponse<T>> SendRequest<T>(
+        string method,
+        object? body = null,
+        JsonSerializerOptions? options = null,
+        CancellationToken ct = default)
     {
+        await ApplyRateLimit(ct);
+        
         try
         {
-            await ApplyRateLimit();
-
-            return (true, await _bot.Client.CallAsync<T>(method, body, options));
+            var result = await _bot.Client.CallAsync<T>(method, Telemetry, body, options, ct);
+            
+            return RequestResponse<T>.Success(result);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            await _bot.AddException(ex);
-            return (false, default);
+            await _bot.AddException(ex, ct);
+            return RequestResponse<T>.Fail(ex);
+        }
+    }
+    
+    public async Task<RequestResponse<T>> SendRequest<T>(
+        string method,
+        object? body = null,
+        CancellationToken ct = default)
+    {
+        await ApplyRateLimit(ct);
+        
+        try
+        {
+            var result = await _bot.Client.CallAsync<T>(method, Telemetry, body, null, ct);
+            
+            return RequestResponse<T>.Success(result);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await _bot.AddException(ex, ct);
+            return RequestResponse<T>.Fail(ex);
         }
     }
 
@@ -60,11 +97,11 @@ public partial class TelegramRequests
         }
     }
 
-    private async Task ApplyRateLimit()
+    private async Task ApplyRateLimit(CancellationToken ct = default)
     {
         if (RateLimit != null)
         {
-            await RateLimit.WaitAsync();
+            await RateLimit.WaitAsync(ct);
         }
     }
 

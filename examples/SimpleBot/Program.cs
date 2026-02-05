@@ -19,7 +19,7 @@ class Program
         await _bot.Run();
     }
 
-    static async Task UpdateHandler(Update update)
+    static async Task UpdateHandler(Update update, CancellationToken ct)
     {
         switch (update.Type)
         {
@@ -29,7 +29,7 @@ class Program
         }
     }
 
-    static async Task ErrorHandler(Exception ex)
+    static async Task ErrorHandler(Exception ex, CancellationToken ct)
     {
         Debug.Console.LogError(ex.ToString());
     }

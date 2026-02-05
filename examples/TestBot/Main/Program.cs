@@ -1,7 +1,11 @@
 ﻿using TgCore.Api.Bot;
 using TgCore.Api.Clients;
+using TgCore.Api.Data;
 using TgCore.Api.Enums;
+using TgCore.Api.Methods;
 using TgCore.Api.Runtime;
+using TgCore.Api.Systems.Telemetry;
+using TgCore.Api.Systems.Telemetry.Data;
 using TgCore.Api.Types;
 using TgCore.Diagnostics.Debugger;
 
@@ -26,43 +30,52 @@ class Program
             .Build();
         
         _bot.Modules
-            .UseLifetime()
+            .UseMessageLifetime()
             .UseRateLimit()
             .UseTextFormatter()
-            .UseTemporaryMessageLimiter()
             .Apply();
 
         _bot.AddUpdateHandler(UpdateHandler)
             .AddErrorHandler(ErrorHandler);
+
+        _bot.Telemetry.OnReport = OnReport;
+        _bot.Telemetry.Config.UseAutoLog = false;
 
         _commandFactory = new CommandFactory(_bot);
 
         await _bot.Run();
     }
 
-    static async Task UpdateHandler(Update update)
+    static async Task OnReport(TelemetrySnapshotDto snapshot, TelemetrySnapshotDto? lastSnapshot)
+    {
+        
+    }
+
+    static async Task UpdateHandler(Update update, CancellationToken ct)
     {
         var chatId = update.FromOrChatId;
         var messageId = update.MessageId;
         
-        Debug.Console.Log($"updateType: {update.Type.ToString()}", new LogOptions { UseFullDate = true});
-        
         if (update.Type == UpdateType.Message)
         {
             var text = update.Message!.Text!;
-
+        
             if (_commandFactory.GetCommand(text, out var command))
             {
                 await command!.ExecuteAsync(chatId!.Value, messageId!.Value);
             }
             else
             {
-                await _bot.Requests.SendText(chatId!.Value, "Unsupported command", replyId: messageId);
+                await _bot.Requests.SendText(
+                    chatId!.Value, 
+                    "Unsupported command", 
+                    replyId: messageId,
+                    lifeTime:TimeSpan.FromSeconds(5));
             }
         }
     }
 
-    static async Task ErrorHandler(Exception ex)
+    static async Task ErrorHandler(Exception ex, CancellationToken ct)
     {
         Debug.Console.LogError(ex.ToString());
     }

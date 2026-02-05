@@ -35,7 +35,7 @@ public class Program
             .Build();
         
         new ModulesConfigurator(_bot)
-            .UseLifetime()
+            .UseMessageLifetime()
             .UseRateLimit()
             .UseTemporaryMessageLimiter()
             .Apply();
@@ -51,7 +51,7 @@ public class Program
         await _bot.Run();
     }
 
-    private static async Task UpdateHandler(Update update)
+    private static async Task UpdateHandler(Update update, CancellationToken ct)
     {
         var ctx = _contextFactory.CreateContext(update);
         if (ctx == null) return;
@@ -59,7 +59,7 @@ public class Program
         await _routerManager.Route(ctx);
     }
 
-    private static async Task ErrorHandler(Exception ex)
+    private static async Task ErrorHandler(Exception ex, CancellationToken ct)
     {
         Debug.Console.LogError(ex.ToString());
     }

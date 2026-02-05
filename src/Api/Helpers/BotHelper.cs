@@ -12,6 +12,28 @@ public static class BotHelper
         };
     }
     
+    public static PollType GetPollType(string type)
+    {
+        return type switch
+        {
+            "regular" => PollType.Regular,
+            "quiz" => PollType.Quiz,
+            _ => throw new NotImplementedException("unsupported poll type"),
+        };
+    }
+    
+    public static ChatType GetChatType(string type)
+    {
+        return type switch
+        {
+            "private" => ChatType.Private,
+            "group" => ChatType.Group,
+            "supergroup" => ChatType.Supergroup,
+            "channel" => ChatType.Channel,
+            _ => throw new NotImplementedException("unsupported chat type"),
+        };
+    }
+    
     public static string GetMediaType(InputFileType fileType)
     {
         return fileType switch

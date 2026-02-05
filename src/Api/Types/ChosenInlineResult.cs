@@ -1,6 +1,6 @@
 namespace TgCore.Api.Types;
 
-public class ChosenInlineResult
+public sealed class ChosenInlineResult
 {
     [JsonPropertyName("result_id")]
     public string ResultId { get; set; } = string.Empty;

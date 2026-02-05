@@ -7,12 +7,12 @@ public class TemporaryMessageLimiterModule : ITemporaryMessageLimiterModule
     private readonly Dictionary<long, List<long>> _messages = new();
     private readonly object _lock = new();
     
-    public ILifetimeModule? LifetimeModule { get; set; }
+    public IMessageLifetimeModule? LifetimeModule { get; set; }
     public TemporaryLimiterMode Mode { get; set; }
     public int MaxMessageLimit { get; set; }
     public bool UseLogging { get; set; }
 
-    public TemporaryMessageLimiterModule(int maxMessageLimit = 3, TemporaryLimiterMode mode = TemporaryLimiterMode.Reject, ILifetimeModule? lifetimeModule = null)
+    public TemporaryMessageLimiterModule(int maxMessageLimit = 3, TemporaryLimiterMode mode = TemporaryLimiterMode.Reject, IMessageLifetimeModule? lifetimeModule = null)
     {
         MaxMessageLimit = maxMessageLimit;
         LifetimeModule = lifetimeModule;

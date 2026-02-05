@@ -3,7 +3,7 @@ namespace TgCore.Api.Types;
 public sealed class CallbackQuery
 {
     [JsonPropertyName("id")] 
-    public string Id { get; init; }
+    public string Id { get; init; } = string.Empty;
 
     [JsonPropertyName("from")] 
     public User From { get; init; }

@@ -1,6 +1,6 @@
 namespace TgCore.Api.Interfaces.Module;
 
-public interface ILifetimeModule
+public interface IMessageLifetimeModule
 {
     /// <summary>
     /// long - chatId/userId, long - messageId
